@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.cinema.domain.model.Movie
 import com.example.cinema.ui.components.MovieCard
 
 @Composable
@@ -34,6 +35,24 @@ fun HomeScreen(
     var selectedCategory by rememberSaveable {
         mutableStateOf("All")
     }
+
+    val movies = listOf(
+        Movie(
+            id = 1,
+            title = "Interstellar",
+            rating = 8.5
+        ),
+        Movie(
+            id = 2,
+            title = "Inception",
+            rating = 8.8
+        ),
+        Movie(
+            id = 3,
+            title = "The Dark Knight",
+            rating = 9.0
+        )
+    )
 
     Column(
         modifier = modifier
@@ -74,10 +93,19 @@ fun HomeScreen(
             text = "Discover movies",
             style = MaterialTheme.typography.titleLarge
         )
-        MovieCard(
-            title = "Interstellar",
-            rating = "8.5",
-            modifier = Modifier.width(160.dp)
-        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(
+                items = movies,
+                key = { movie -> movie.id }
+            ) { movie ->
+                MovieCard(
+                    title = movie.title,
+                    rating = movie.rating.toString(),
+                    modifier = Modifier.width(160.dp)
+                )
+            }
+        }
     }
 }
