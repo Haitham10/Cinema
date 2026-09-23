@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.cinema.data.sample.SampleMovies
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.ui.components.MovieCard
 
@@ -37,23 +38,7 @@ fun HomeScreen(
         mutableStateOf("All")
     }
 
-    val movies = listOf(
-        Movie(
-            id = 1,
-            title = "Interstellar",
-            rating = 8.5
-        ),
-        Movie(
-            id = 2,
-            title = "Inception",
-            rating = 8.8
-        ),
-        Movie(
-            id = 3,
-            title = "The Dark Knight",
-            rating = 9.0
-        )
-    )
+    val movies = SampleMovies.movies
 
     Column(
         modifier = modifier

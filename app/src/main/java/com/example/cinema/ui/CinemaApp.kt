@@ -21,6 +21,7 @@ import com.example.cinema.ui.profile.ProfileScreen
 import com.example.cinema.ui.search.SearchScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.cinema.data.sample.SampleMovies
 import com.example.cinema.ui.details.MovieDetailsScreen
 
 private enum class MainDestination(
@@ -118,8 +119,12 @@ fun CinemaApp(
                 val movieId = requireNotNull(entry.arguments)
                     .getInt("movieId")
 
+                val movie = SampleMovies.movies.find { movie ->
+                    movie.id == movieId
+                }
+
                 MovieDetailsScreen(
-                    movieId = movieId,
+                    movie = movie,
                     onBackClick = {
                         navController.popBackStack()
                     }

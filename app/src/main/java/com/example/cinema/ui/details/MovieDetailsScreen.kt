@@ -10,10 +10,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.cinema.domain.model.Movie
 
 @Composable
 fun MovieDetailsScreen(
-    movieId: Int,
+    movie: Movie?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -29,14 +30,21 @@ fun MovieDetailsScreen(
             Text(text = "Back")
         }
 
-        Text(
-            text = "Movie Details",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        if (movie == null) {
+            Text(
+                text = "Movie not found",
+                style = MaterialTheme.typography.titleLarge
+            )
+        } else {
+            Text(
+                text = movie.title,
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-        Text(
-            text = "Movie ID: $movieId",
-            style = MaterialTheme.typography.bodyLarge
-        )
+            Text(
+                text = "${movie.rating} / 10",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
