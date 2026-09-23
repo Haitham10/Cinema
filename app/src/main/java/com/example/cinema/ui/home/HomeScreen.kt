@@ -22,6 +22,7 @@ import com.example.cinema.ui.components.MovieCard
 
 @Composable
 fun HomeScreen(
+    onMovieClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val categories = listOf(
@@ -103,6 +104,9 @@ fun HomeScreen(
                 MovieCard(
                     title = movie.title,
                     rating = movie.rating.toString(),
+                    onClick = {
+                        onMovieClick(movie.id)
+                    },
                     modifier = Modifier.width(160.dp)
                 )
             }

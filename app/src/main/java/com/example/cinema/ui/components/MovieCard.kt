@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.dp
 fun MovieCard(
     title: String,
     rating: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
-) {
+){
     Card(
+        onClick = onClick,
         modifier = modifier
     ) {
         Column {
