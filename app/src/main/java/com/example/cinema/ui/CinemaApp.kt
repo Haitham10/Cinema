@@ -23,7 +23,13 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.cinema.data.sample.SampleMovies
 import com.example.cinema.ui.details.MovieDetailsScreen
-
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.cinema.data.repository.SampleMoviesRepository
+import com.example.cinema.ui.home.HomeViewModel
+import com.example.cinema.ui.home.createHomeViewModelFactory
 private enum class MainDestination(
     val route: String,
     val label: String,
@@ -88,7 +94,20 @@ fun CinemaApp(
                 .padding(innerPadding)
         ) {
             composable(route = MainDestination.HOME.route) {
+                val factory = remember {
+                    createHomeViewModelFactory(
+                        repository = SampleMoviesRepository()
+                    )
+                }
+
+                val homeViewModel: HomeViewModel = viewModel(
+                    factory = factory
+                )
+
+                val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
                 HomeScreen(
+                    uiState = uiState,
                     onMovieClick = { movieId ->
                         navController.navigate("movie_details/$movieId") {
                             launchSingleTop = true

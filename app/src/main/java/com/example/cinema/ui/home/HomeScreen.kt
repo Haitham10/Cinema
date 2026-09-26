@@ -23,6 +23,7 @@ import com.example.cinema.ui.components.MovieCard
 
 @Composable
 fun HomeScreen(
+    uiState: HomeUiState,
     onMovieClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -38,7 +39,7 @@ fun HomeScreen(
         mutableStateOf("All")
     }
 
-    val movies = SampleMovies.movies
+
 
     Column(
         modifier = modifier
@@ -83,7 +84,7 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(
-                items = movies,
+                items = uiState.movies,
                 key = { movie -> movie.id }
             ) { movie ->
                 MovieCard(
