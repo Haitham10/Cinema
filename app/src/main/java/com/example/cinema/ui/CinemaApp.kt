@@ -20,13 +20,13 @@ import com.example.cinema.ui.profile.ProfileScreen
 import com.example.cinema.ui.search.SearchScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.example.cinema.data.sample.SampleMovies
 import com.example.cinema.ui.details.MovieDetailsScreen
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import com.example.cinema.ui.home.HomeViewModel
+import com.example.cinema.ui.details.MovieDetailsViewModel
 
 private enum class MainDestination(
     val route: String,
@@ -124,16 +124,15 @@ fun CinemaApp(
                         type = NavType.IntType
                     }
                 )
-            ) { entry ->
-                val movieId = requireNotNull(entry.arguments)
-                    .getInt("movieId")
+            ) {
+                val movieDetailsViewModel: MovieDetailsViewModel =
+                    hiltViewModel()
 
-                val movie = SampleMovies.movies.find { movie ->
-                    movie.id == movieId
-                }
+                val uiState by movieDetailsViewModel.uiState
+                    .collectAsStateWithLifecycle()
 
                 MovieDetailsScreen(
-                    movie = movie,
+                    uiState = uiState,
                     onBackClick = {
                         navController.popBackStack()
                     }
