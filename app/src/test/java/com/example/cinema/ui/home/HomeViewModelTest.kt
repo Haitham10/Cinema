@@ -2,66 +2,58 @@ package com.example.cinema.ui.home
 
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.repository.MoviesRepository
+import com.example.cinema.testing.MainDispatcherRule
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     @Test
-    fun init_repositoryHasMovies_uiStateContainsMovies() {
-        // Arrange
+    fun `ui state contains movies returned by repository`() = runTest {
         val expectedMovies = listOf(
             Movie(
-                id = 10,
-                title = "Test movie",
+                id = 1,
+                title = "Movie One",
                 rating = 8.0
             ),
             Movie(
-                id = 42,
-                title = "Another movie",
+                id = 2,
+                title = "Movie Two",
                 rating = 7.5
             )
         )
 
         val repository = FakeMoviesRepository(expectedMovies)
-
-        // Act
         val viewModel = HomeViewModel(repository)
 
-        // Assert
+        advanceUntilIdle()
+
         assertEquals(
             expectedMovies,
             viewModel.uiState.value.movies
         )
     }
 
-    @Test
-    fun init_repositoryIsEmpty_uiStateContainsEmptyList() {
-        // Arrange
-        val repository = FakeMoviesRepository(emptyList())
+    private class FakeMoviesRepository(
+        private val movies: List<Movie>
+    ) : MoviesRepository {
 
-        // Act
-        val viewModel = HomeViewModel(repository)
+        override suspend fun getMovies(): List<Movie> {
+            return movies
+        }
 
-        // Assert
-        assertTrue(
-            viewModel.uiState.value.movies.isEmpty()
-        )
-    }
-}
-
-private class FakeMoviesRepository(
-    private val movies: List<Movie>
-) : MoviesRepository {
-
-    override fun getMovies(): List<Movie> {
-        return movies
-    }
-
-    override fun getMovieById(id: Int): Movie? {
-        return movies.find { movie ->
-            movie.id == id
+        override suspend fun getMovieById(id: Int): Movie? {
+            return movies.find { movie ->
+                movie.id == id
+            }
         }
     }
 }

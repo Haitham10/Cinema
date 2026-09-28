@@ -8,11 +8,11 @@ class SampleMoviesRepository(
     private val movies: List<Movie> = SampleMovies.movies
 ) : MoviesRepository {
 
-    override fun getMovies(): List<Movie> {
+    override suspend fun getMovies(): List<Movie> {
         return movies
     }
 
-    override fun getMovieById(id: Int): Movie? {
+    override suspend fun getMovieById(id: Int): Movie? {
         return movies.find { movie ->
             movie.id == id
         }

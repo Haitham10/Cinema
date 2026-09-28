@@ -2,6 +2,7 @@ package com.example.cinema.data.repository
 
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.repository.MoviesRepository
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -26,21 +27,21 @@ class SampleMoviesRepositoryTest {
         SampleMoviesRepository(movies = testMovies)
 
     @Test
-    fun getMovies_returnsProvidedMovies() {
+    fun getMovies_returnsProvidedMovies() =runTest {
         val result = repository.getMovies()
 
         assertEquals(testMovies, result)
     }
 
     @Test
-    fun getMovieById_existingId_returnsMatchingMovie() {
+    fun getMovieById_existingId_returnsMatchingMovie()= runTest {
         val result = repository.getMovieById(42)
 
         assertEquals(secondMovie, result)
     }
 
     @Test
-    fun getMovieById_unknownId_returnsNull() {
+    fun getMovieById_unknownId_returnsNull()= runTest {
         val result = repository.getMovieById(999)
 
         assertNull(result)

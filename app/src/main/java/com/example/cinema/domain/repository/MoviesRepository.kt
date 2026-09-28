@@ -4,7 +4,7 @@ import com.example.cinema.domain.model.Movie
 
 interface MoviesRepository {
 
-    fun getMovies(): List<Movie>
+    suspend fun getMovies(): List<Movie>
 
-    fun getMovieById(id: Int): Movie?
+    suspend fun getMovieById(id: Int): Movie?
 }
