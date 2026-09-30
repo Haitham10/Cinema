@@ -20,11 +20,18 @@ import androidx.compose.ui.unit.dp
 import com.example.cinema.data.sample.SampleMovies
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.ui.components.MovieCard
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.Alignment
 
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
     onMovieClick: (Int) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val categories = listOf(
@@ -80,21 +87,58 @@ fun HomeScreen(
             text = "Discover movies",
             style = MaterialTheme.typography.titleLarge
         )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(
-                items = uiState.movies,
-                key = { movie -> movie.id }
-            ) { movie ->
-                MovieCard(
-                    title = movie.title,
-                    rating = movie.rating.toString(),
-                    onClick = {
-                        onMovieClick(movie.id)
-                    },
-                    modifier = Modifier.width(160.dp)
-                )
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            uiState.errorMessage != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = uiState.errorMessage.orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.padding(top = 12.dp)
+                    ) {
+                        Text(text = "Retry")
+                    }
+                }
+            }
+
+            else -> {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(
+                        items = uiState.movies,
+                        key = { movie -> movie.id }
+                    ) { movie ->
+                        MovieCard(
+                            title = movie.title,
+                            rating = movie.rating.toString(),
+                            onClick = {
+                                onMovieClick(movie.id)
+                            },
+                            modifier = Modifier.width(160.dp)
+                        )
+                    }
+                }
             }
         }
     }

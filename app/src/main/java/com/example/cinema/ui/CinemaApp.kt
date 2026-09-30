@@ -102,7 +102,8 @@ fun CinemaApp(
                         navController.navigate("movie_details/$movieId") {
                             launchSingleTop = true
                         }
-                    }
+                    },
+                    onRetry = homeViewModel::retry
                 )
             }
 
