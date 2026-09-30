@@ -132,6 +132,7 @@ fun HomeScreen(
                         MovieCard(
                             title = movie.title,
                             rating = movie.rating.toString(),
+                            posterUrl = movie.posterUrl,
                             onClick = {
                                 onMovieClick(movie.id)
                             },

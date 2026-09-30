@@ -11,18 +11,35 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 
 @Composable
 fun MovieCard(
     title: String,
     rating: String,
     onClick: () -> Unit,
+    posterUrl: String? = null,
     modifier: Modifier = Modifier
-){
+) {
+    var posterMessage by remember(posterUrl) {
+        mutableStateOf<String?>(
+            if (posterUrl.isNullOrBlank()) {
+                "No poster available"
+            } else {
+                "Loading poster..."
+            }
+        )
+    }
+
     Card(
         onClick = onClick,
         modifier = modifier
@@ -37,9 +54,31 @@ fun MovieCard(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Movie poster"
-                )
+                if (!posterUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = posterUrl,
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop,
+                        onLoading = {
+                            posterMessage = "Loading poster..."
+                        },
+                        onSuccess = {
+                            posterMessage = null
+                        },
+                        onError = {
+                            posterMessage = "Poster unavailable"
+                        }
+                    )
+                }
+
+                posterMessage?.let { message ->
+                    Text(
+                        text = message,
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
 
             Column(

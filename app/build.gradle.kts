@@ -83,4 +83,6 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.kotlinx.coroutines.test)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }
