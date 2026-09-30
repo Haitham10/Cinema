@@ -1,6 +1,7 @@
 package com.example.cinema.data.repository
 
 import com.example.cinema.data.remote.api.TmdbApiService
+import com.example.cinema.data.remote.dto.CreditsResponseDto
 import com.example.cinema.data.remote.dto.MovieDto
 import com.example.cinema.data.remote.dto.MoviesResponseDto
 import kotlinx.coroutines.test.runTest
@@ -95,6 +96,12 @@ class TmdbMoviesRepositoryTest {
         ): MovieDto {
             requestedMovieId = movieId
             return detailsResponse
+        }
+        override suspend fun getMovieCredits(
+            movieId: Int,
+            language: String
+        ): CreditsResponseDto {
+            return CreditsResponseDto()
         }
     }
 }
