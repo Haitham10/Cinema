@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinema.domain.repository.MoviesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,18 +30,36 @@ class MovieDetailsViewModel @Inject constructor(
     val uiState: StateFlow<MovieDetailsUiState> =
         _uiState.asStateFlow()
 
+    private var loadJob: Job? = null
+
     init {
         loadMovie()
     }
 
-    private fun loadMovie() {
-        viewModelScope.launch {
-            val movie = repository.getMovieById(movieId)
+    fun retry() {
+        loadMovie()
+    }
 
-            _uiState.value = if (movie == null) {
-                MovieDetailsUiState.NotFound
-            } else {
-                MovieDetailsUiState.Success(movie)
+    private fun loadMovie() {
+        if (loadJob?.isActive == true) return
+
+        _uiState.value = MovieDetailsUiState.Loading
+
+        loadJob = viewModelScope.launch {
+            try {
+                val movie = repository.getMovieById(movieId)
+
+                _uiState.value = if (movie == null) {
+                    MovieDetailsUiState.NotFound
+                } else {
+                    MovieDetailsUiState.Success(movie)
+                }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _uiState.value = MovieDetailsUiState.Error(
+                    message = "Unable to load movie. Please try again."
+                )
             }
         }
     }

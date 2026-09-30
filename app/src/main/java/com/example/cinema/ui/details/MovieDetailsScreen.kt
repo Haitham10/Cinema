@@ -11,11 +11,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Button
 
 @Composable
 fun MovieDetailsScreen(
     uiState: MovieDetailsUiState,
     onBackClick: () -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -52,6 +54,18 @@ fun MovieDetailsScreen(
                     text = "Movie not found",
                     style = MaterialTheme.typography.titleLarge
                 )
+            }
+            is MovieDetailsUiState.Error -> {
+                Text(
+                    text = uiState.message,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Button(
+                    onClick = onRetry
+                ) {
+                    Text(text = "Retry")
+                }
             }
         }
     }

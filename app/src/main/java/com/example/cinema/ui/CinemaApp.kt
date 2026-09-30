@@ -24,6 +24,7 @@ import com.example.cinema.ui.details.MovieDetailsScreen
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.cinema.ui.home.HomeViewModel
 import com.example.cinema.ui.details.MovieDetailsViewModel
@@ -136,7 +137,8 @@ fun CinemaApp(
                     uiState = uiState,
                     onBackClick = {
                         navController.popBackStack()
-                    }
+                    },
+                    onRetry = movieDetailsViewModel::retry
                 )
             }
         }

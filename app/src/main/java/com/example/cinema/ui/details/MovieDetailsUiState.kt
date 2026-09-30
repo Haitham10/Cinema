@@ -11,4 +11,8 @@ sealed interface MovieDetailsUiState {
     ) : MovieDetailsUiState
 
     data object NotFound : MovieDetailsUiState
+
+    data class Error(
+        val message: String
+    ) : MovieDetailsUiState
 }

@@ -78,17 +78,91 @@ class MovieDetailsViewModelTest {
             repository = repository
         )
     }
+
+    @Test
+    fun init_repositoryFails_uiStateIsError() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = listOf(expectedMovie),
+            error = java.io.IOException("Connection failed")
+        )
+
+        val viewModel = MovieDetailsViewModel(
+            savedStateHandle = SavedStateHandle(
+                mapOf("movieId" to expectedMovie.id)
+            ),
+            repository = repository
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(
+            MovieDetailsUiState.Error(
+                "Unable to load movie. Please try again."
+            ),
+            viewModel.uiState.value
+        )
+    }
+
+    @Test
+    fun retry_afterFailure_uiStateIsSuccess() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = listOf(expectedMovie),
+            error = java.io.IOException("Connection failed")
+        )
+
+        val viewModel = MovieDetailsViewModel(
+            savedStateHandle = SavedStateHandle(
+                mapOf("movieId" to expectedMovie.id)
+            ),
+            repository = repository
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(
+            MovieDetailsUiState.Error(
+                "Unable to load movie. Please try again."
+            ),
+            viewModel.uiState.value
+        )
+
+        repository.error = null
+
+        viewModel.retry()
+
+        assertEquals(
+            MovieDetailsUiState.Loading,
+            viewModel.uiState.value
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(
+            MovieDetailsUiState.Success(expectedMovie),
+            viewModel.uiState.value
+        )
+        assertEquals(2, repository.getMovieByIdCallCount)
+    }
+
 }
 
 private class FakeMoviesRepository(
-    private val movies: List<Movie>
+    private val movies: List<Movie>,
+    var error: Exception? = null
 ) : MoviesRepository {
 
-    override suspend fun getMovies(): List<Movie>{
+    var getMovieByIdCallCount: Int = 0
+        private set
+
+    override suspend fun getMovies(): List<Movie> {
         return movies
     }
 
     override suspend fun getMovieById(id: Int): Movie? {
+        getMovieByIdCallCount++
+
+        error?.let { throw it }
+
         return movies.find { movie ->
             movie.id == id
         }
