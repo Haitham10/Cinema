@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinema.domain.repository.MoviesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,13 +24,40 @@ class HomeViewModel @Inject constructor(
         loadMovies()
     }
 
+    fun retry() {
+        loadMovies()
+    }
+
     private fun loadMovies() {
         viewModelScope.launch {
-            val movies = repository.getMovies()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isLoading = true,
+                    errorMessage = null
+                )
+            }
 
-            _uiState.value = HomeUiState(
-                movies = movies
-            )
+            try {
+                val movies = repository.getMovies()
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        movies = movies,
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        errorMessage = exception.message
+                            ?: "Unable to load movies"
+                    )
+                }
+            }
         }
     }
 }
