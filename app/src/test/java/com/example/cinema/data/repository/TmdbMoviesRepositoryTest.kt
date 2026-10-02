@@ -9,6 +9,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import com.example.cinema.data.remote.dto.CastDto
+import com.example.cinema.data.remote.dto.VideosResponseDto
 import com.example.cinema.domain.model.CastMember
 
 class TmdbMoviesRepositoryTest {
@@ -110,6 +111,13 @@ class TmdbMoviesRepositoryTest {
         ): CreditsResponseDto {
             requestedCastMovieId = movieId
             return creditsResponse
+        }
+
+        override suspend fun getMovieVideos(
+            movieId: Int,
+            language: String
+        ): VideosResponseDto {
+            return VideosResponseDto()
         }
     }
 
