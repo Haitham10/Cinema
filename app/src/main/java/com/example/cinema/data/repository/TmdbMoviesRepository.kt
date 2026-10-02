@@ -5,6 +5,7 @@ import com.example.cinema.data.remote.api.TmdbApiService
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.repository.MoviesRepository
 import javax.inject.Inject
+import com.example.cinema.domain.model.CastMember
 
 class TmdbMoviesRepository @Inject constructor(
     private val api: TmdbApiService
@@ -23,5 +24,14 @@ class TmdbMoviesRepository @Inject constructor(
         return api
             .getMovieDetails(id)
             .toDomain()
+    }
+
+    override suspend fun getMovieCast(movieId: Int): List<CastMember> {
+        return api
+            .getMovieCredits(movieId)
+            .cast
+            .map { castDto ->
+                castDto.toDomain()
+            }
     }
 }

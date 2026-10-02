@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.example.cinema.domain.model.CastMember
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsViewModelTest {
@@ -166,5 +167,8 @@ private class FakeMoviesRepository(
         return movies.find { movie ->
             movie.id == id
         }
+    }
+    override suspend fun getMovieCast(movieId: Int): List<CastMember> {
+        return emptyList()
     }
 }

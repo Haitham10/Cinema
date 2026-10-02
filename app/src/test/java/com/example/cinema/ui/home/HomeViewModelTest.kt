@@ -12,7 +12,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-
+import com.example.cinema.domain.model.CastMember
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
@@ -124,5 +124,11 @@ class HomeViewModelTest {
                 movie.id == id
             }
         }
+
+        override suspend fun getMovieCast(movieId: Int): List<CastMember> {
+            return emptyList()
+        }
+
+
     }
 }

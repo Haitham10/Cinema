@@ -8,6 +8,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
+import com.example.cinema.data.remote.dto.CastDto
+import com.example.cinema.domain.model.CastMember
 
 class TmdbMoviesRepositoryTest {
 
@@ -73,13 +75,18 @@ class TmdbMoviesRepositoryTest {
 
     private class FakeTmdbApiService(
         private val popularResponse: MoviesResponseDto,
-        private val detailsResponse: MovieDto
+        private val detailsResponse: MovieDto,
+        private val creditsResponse: CreditsResponseDto =
+            CreditsResponseDto()
     ) : TmdbApiService {
 
         var popularRequestCount: Int = 0
             private set
 
         var requestedMovieId: Int? = null
+            private set
+
+        var requestedCastMovieId: Int? = null
             private set
 
         override suspend fun getPopularMovies(
@@ -101,7 +108,71 @@ class TmdbMoviesRepositoryTest {
             movieId: Int,
             language: String
         ): CreditsResponseDto {
-            return CreditsResponseDto()
+            requestedCastMovieId = movieId
+            return creditsResponse
         }
+    }
+
+    @Test
+    fun getMovieCast_passesMovieIdAndReturnsMappedCast() = runTest {
+        val fakeApi = FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto,
+            creditsResponse = CreditsResponseDto(
+                cast = listOf(
+                    CastDto(
+                        id = 100,
+                        name = "Test actor",
+                        character = "Test character",
+                        profilePath = "/actor.jpg"
+                    )
+                )
+            )
+        )
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val cast = repository.getMovieCast(42)
+
+        assertEquals(42, fakeApi.requestedCastMovieId)
+        assertEquals(
+            listOf(
+                CastMember(
+                    id = 100,
+                    name = "Test actor",
+                    character = "Test character",
+                    profileUrl =
+                        "https://image.tmdb.org/t/p/w185/actor.jpg"
+                )
+            ),
+            cast
+        )
+    }
+
+    @Test
+    fun getMovieCast_emptyResponse_returnsEmptyList() = runTest {
+        val fakeApi = FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto,
+            creditsResponse = CreditsResponseDto(
+                cast = emptyList()
+            )
+        )
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val cast = repository.getMovieCast(42)
+
+        assertEquals(emptyList<CastMember>(), cast)
     }
 }
