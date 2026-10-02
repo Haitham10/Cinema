@@ -14,6 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import kotlinx.coroutines.test.runTest
 import com.example.cinema.domain.model.MovieVideo
+import com.example.cinema.domain.selector.TrailerSelector
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsCastTest {
@@ -43,7 +44,8 @@ class MovieDetailsCastTest {
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to movie.id)
             ),
-            repository = repository
+            repository = repository ,
+            trailerSelector = TrailerSelector()
         )
     }
 
@@ -63,7 +65,8 @@ class MovieDetailsCastTest {
         assertEquals(
             MovieDetailsUiState.Success(
                 movie = movie,
-                castState = CastUiState.Loading
+                castState = CastUiState.Loading ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )
@@ -74,7 +77,8 @@ class MovieDetailsCastTest {
         assertEquals(
             MovieDetailsUiState.Success(
                 movie = movie,
-                castState = CastUiState.Success(cast)
+                castState = CastUiState.Success(cast) ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )
@@ -97,7 +101,8 @@ class MovieDetailsCastTest {
                 movie = movie,
                 castState = CastUiState.Error(
                     "Unable to load cast. Please try again."
-                )
+                ) ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )
@@ -121,7 +126,8 @@ class MovieDetailsCastTest {
         assertEquals(
             MovieDetailsUiState.Success(
                 movie = movie,
-                castState = CastUiState.Loading
+                castState = CastUiState.Loading ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )
@@ -131,7 +137,8 @@ class MovieDetailsCastTest {
         assertEquals(
             MovieDetailsUiState.Success(
                 movie = movie,
-                castState = CastUiState.Success(cast)
+                castState = CastUiState.Success(cast) ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )

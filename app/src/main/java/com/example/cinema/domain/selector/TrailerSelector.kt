@@ -1,8 +1,9 @@
 package com.example.cinema.domain.selector
 
 import com.example.cinema.domain.model.MovieVideo
+import javax.inject.Inject
 
-class TrailerSelector {
+class TrailerSelector @Inject constructor() {
 
     fun select(videos: List<MovieVideo>): MovieVideo? {
         val trailers = videos.filter { video ->

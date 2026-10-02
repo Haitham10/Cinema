@@ -12,6 +12,7 @@ import org.junit.Rule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.MovieVideo
+import com.example.cinema.domain.selector.TrailerSelector
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsViewModelTest {
@@ -36,7 +37,8 @@ class MovieDetailsViewModelTest {
 
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
-            repository = repository
+            repository = repository ,
+            trailerSelector = TrailerSelector()
         )
 
         advanceUntilIdle()
@@ -44,7 +46,8 @@ class MovieDetailsViewModelTest {
         assertEquals(
             MovieDetailsUiState.Success(
                 movie = expectedMovie,
-                castState = CastUiState.Success(emptyList())
+                castState = CastUiState.Success(emptyList()) ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )
@@ -58,7 +61,8 @@ class MovieDetailsViewModelTest {
 
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
-            repository = repository
+            repository = repository ,
+            trailerSelector = TrailerSelector()
         )
 
         advanceUntilIdle()
@@ -80,7 +84,8 @@ class MovieDetailsViewModelTest {
         // Act
         MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
-            repository = repository
+            repository = repository ,
+            trailerSelector = TrailerSelector()
         )
     }
 
@@ -95,7 +100,8 @@ class MovieDetailsViewModelTest {
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to expectedMovie.id)
             ),
-            repository = repository
+            repository = repository ,
+            trailerSelector = TrailerSelector()
         )
 
         advanceUntilIdle()
@@ -119,7 +125,8 @@ class MovieDetailsViewModelTest {
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to expectedMovie.id)
             ),
-            repository = repository
+            repository = repository ,
+            trailerSelector = TrailerSelector()
         )
 
         advanceUntilIdle()
@@ -145,7 +152,8 @@ class MovieDetailsViewModelTest {
         assertEquals(
             MovieDetailsUiState.Success(
                 movie = expectedMovie,
-                castState = CastUiState.Success(emptyList())
+                castState = CastUiState.Success(emptyList()) ,
+                trailerState = TrailerUiState.Unavailable
             ),
             viewModel.uiState.value
         )
