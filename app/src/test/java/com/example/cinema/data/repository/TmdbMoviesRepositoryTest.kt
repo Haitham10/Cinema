@@ -11,6 +11,8 @@ import org.junit.Test
 import com.example.cinema.data.remote.dto.CastDto
 import com.example.cinema.data.remote.dto.VideosResponseDto
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.data.remote.dto.VideoDto
+import com.example.cinema.domain.model.MovieVideo
 
 class TmdbMoviesRepositoryTest {
 
@@ -78,7 +80,9 @@ class TmdbMoviesRepositoryTest {
         private val popularResponse: MoviesResponseDto,
         private val detailsResponse: MovieDto,
         private val creditsResponse: CreditsResponseDto =
-            CreditsResponseDto()
+            CreditsResponseDto(),
+        private val videosResponse: VideosResponseDto =
+            VideosResponseDto()
     ) : TmdbApiService {
 
         var popularRequestCount: Int = 0
@@ -88,6 +92,9 @@ class TmdbMoviesRepositoryTest {
             private set
 
         var requestedCastMovieId: Int? = null
+            private set
+
+        var requestedVideosMovieId: Int? = null
             private set
 
         override suspend fun getPopularMovies(
@@ -117,8 +124,11 @@ class TmdbMoviesRepositoryTest {
             movieId: Int,
             language: String
         ): VideosResponseDto {
-            return VideosResponseDto()
+            requestedVideosMovieId = movieId
+            return videosResponse
         }
+
+
     }
 
     @Test
@@ -182,5 +192,70 @@ class TmdbMoviesRepositoryTest {
         val cast = repository.getMovieCast(42)
 
         assertEquals(emptyList<CastMember>(), cast)
+    }
+    @Test
+    fun getMovieVideos_passesMovieIdAndReturnsMappedVideos() = runTest {
+        val fakeApi = FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto,
+            videosResponse = VideosResponseDto(
+                results = listOf(
+                    VideoDto(
+                        id = "tmdb-video-1",
+                        name = "Official Trailer",
+                        key = "youtube-video-key",
+                        site = "YouTube",
+                        type = "Trailer",
+                        official = true
+                    )
+                )
+            )
+        )
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val videos = repository.getMovieVideos(42)
+
+        assertEquals(42, fakeApi.requestedVideosMovieId)
+        assertEquals(
+            listOf(
+                MovieVideo(
+                    id = "tmdb-video-1",
+                    name = "Official Trailer",
+                    videoKey = "youtube-video-key",
+                    site = "YouTube",
+                    type = "Trailer",
+                    isOfficial = true
+                )
+            ),
+            videos
+        )
+    }
+
+    @Test
+    fun getMovieVideos_emptyResponse_returnsEmptyList() = runTest {
+        val fakeApi = FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto,
+            videosResponse = VideosResponseDto(
+                results = emptyList()
+            )
+        )
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val videos = repository.getMovieVideos(42)
+
+        assertEquals(emptyList<MovieVideo>(), videos)
     }
 }

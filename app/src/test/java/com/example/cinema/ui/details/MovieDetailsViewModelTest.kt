@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.domain.model.MovieVideo
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsViewModelTest {
@@ -176,6 +177,11 @@ private class FakeMoviesRepository(
         }
     }
     override suspend fun getMovieCast(movieId: Int): List<CastMember> {
+        return emptyList()
+    }
+    override suspend fun getMovieVideos(
+        movieId: Int
+    ): List<MovieVideo> {
         return emptyList()
     }
 }

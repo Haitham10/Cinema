@@ -2,6 +2,7 @@ package com.example.cinema.domain.repository
 
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.Movie
+import com.example.cinema.domain.model.MovieVideo
 
 interface MoviesRepository {
 
@@ -10,4 +11,7 @@ interface MoviesRepository {
     suspend fun getMovieById(id: Int): Movie?
 
     suspend fun getMovieCast(movieId: Int): List<CastMember>
+
+    suspend fun getMovieVideos(movieId: Int): List<MovieVideo>
+
 }

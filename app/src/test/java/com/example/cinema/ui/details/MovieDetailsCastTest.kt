@@ -13,6 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import kotlinx.coroutines.test.runTest
+import com.example.cinema.domain.model.MovieVideo
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsCastTest {
@@ -169,6 +170,11 @@ class MovieDetailsCastTest {
             castError?.let { throw it }
 
             return members
+        }
+        override suspend fun getMovieVideos(
+            movieId: Int
+        ): List<MovieVideo> {
+            return emptyList()
         }
     }
 }
