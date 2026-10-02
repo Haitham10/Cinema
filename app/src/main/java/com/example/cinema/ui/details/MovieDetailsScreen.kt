@@ -33,6 +33,7 @@ fun MovieDetailsScreen(
     uiState: MovieDetailsUiState,
     onBackClick: () -> Unit,
     onRetry: () -> Unit,
+    onRetryCast: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -144,6 +145,10 @@ fun MovieDetailsScreen(
                         "No overview available."
                     },
                     style = MaterialTheme.typography.bodyLarge
+                )
+                CastSection(
+                    state = uiState.castState,
+                    onRetry = onRetryCast
                 )
             }
 

@@ -132,13 +132,13 @@ fun CinemaApp(
 
                 val uiState by movieDetailsViewModel.uiState
                     .collectAsStateWithLifecycle()
-
                 MovieDetailsScreen(
                     uiState = uiState,
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onRetry = movieDetailsViewModel::retry
+                    onRetry = movieDetailsViewModel::retry,
+                    onRetryCast = movieDetailsViewModel::retryCast
                 )
             }
         }
