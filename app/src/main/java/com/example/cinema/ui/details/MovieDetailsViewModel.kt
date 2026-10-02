@@ -3,6 +3,7 @@ package com.example.cinema.ui.details
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.repository.MoviesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -30,7 +31,8 @@ class MovieDetailsViewModel @Inject constructor(
     val uiState: StateFlow<MovieDetailsUiState> =
         _uiState.asStateFlow()
 
-    private var loadJob: Job? = null
+    private var movieJob: Job? = null
+    private var castJob: Job? = null
 
     init {
         loadMovie()
@@ -40,25 +42,67 @@ class MovieDetailsViewModel @Inject constructor(
         loadMovie()
     }
 
+    fun retryCast() {
+        val currentState =
+            _uiState.value as? MovieDetailsUiState.Success
+                ?: return
+
+        if (currentState.castState !is CastUiState.Error) return
+
+        loadCast(currentState.movie)
+    }
+
     private fun loadMovie() {
-        if (loadJob?.isActive == true) return
+        if (movieJob?.isActive == true) return
+
+        castJob?.cancel()
 
         _uiState.value = MovieDetailsUiState.Loading
 
-        loadJob = viewModelScope.launch {
+        movieJob = viewModelScope.launch {
             try {
                 val movie = repository.getMovieById(movieId)
 
-                _uiState.value = if (movie == null) {
-                    MovieDetailsUiState.NotFound
-                } else {
-                    MovieDetailsUiState.Success(movie)
+                if (movie == null) {
+                    _uiState.value = MovieDetailsUiState.NotFound
+                    return@launch
                 }
+
+                loadCast(movie)
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
                 _uiState.value = MovieDetailsUiState.Error(
                     message = "Unable to load movie. Please try again."
+                )
+            }
+        }
+    }
+
+    private fun loadCast(movie: Movie) {
+        if (castJob?.isActive == true) return
+
+        _uiState.value = MovieDetailsUiState.Success(
+            movie = movie,
+            castState = CastUiState.Loading
+        )
+
+        castJob = viewModelScope.launch {
+            try {
+                val members = repository.getMovieCast(movie.id)
+
+                _uiState.value = MovieDetailsUiState.Success(
+                    movie = movie,
+                    castState = CastUiState.Success(members)
+                )
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _uiState.value = MovieDetailsUiState.Success(
+                    movie = movie,
+                    castState = CastUiState.Error(
+                        message = "Unable to load cast. Please try again."
+                    )
                 )
             }
         }

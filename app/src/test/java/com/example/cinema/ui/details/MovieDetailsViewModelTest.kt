@@ -41,7 +41,10 @@ class MovieDetailsViewModelTest {
         advanceUntilIdle()
 
         assertEquals(
-            MovieDetailsUiState.Success(expectedMovie),
+            MovieDetailsUiState.Success(
+                movie = expectedMovie,
+                castState = CastUiState.Success(emptyList())
+            ),
             viewModel.uiState.value
         )
     }
@@ -139,9 +142,13 @@ class MovieDetailsViewModelTest {
         advanceUntilIdle()
 
         assertEquals(
-            MovieDetailsUiState.Success(expectedMovie),
+            MovieDetailsUiState.Success(
+                movie = expectedMovie,
+                castState = CastUiState.Success(emptyList())
+            ),
             viewModel.uiState.value
         )
+
         assertEquals(2, repository.getMovieByIdCallCount)
     }
 

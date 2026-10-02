@@ -7,7 +7,8 @@ sealed interface MovieDetailsUiState {
     data object Loading : MovieDetailsUiState
 
     data class Success(
-        val movie: Movie
+        val movie: Movie,
+        val castState: CastUiState = CastUiState.Loading
     ) : MovieDetailsUiState
 
     data object NotFound : MovieDetailsUiState
