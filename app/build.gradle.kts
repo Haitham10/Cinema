@@ -85,4 +85,5 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.youtube.player.core)
 }

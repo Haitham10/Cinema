@@ -7,9 +7,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.cinema.ui.components.YouTubeTrailerPlayer
 
 @Composable
 fun TrailerSection(
@@ -33,17 +39,46 @@ fun TrailerSection(
             }
 
             is TrailerUiState.Success -> {
+                val video = state.video
+
+                var showPlayer by remember(video.videoKey) {
+                    mutableStateOf(false)
+                }
+
                 Text(
-                    text = state.video.name,
+                    text = video.name,
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                Button(
+                if (showPlayer) {
+                    YouTubeTrailerPlayer(
+                        videoKey = video.videoKey
+                    )
+
+                    TextButton(
+                        onClick = {
+                            showPlayer = false
+                        }
+                    ) {
+                        Text(text = "Close player")
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            showPlayer = true
+                        }
+                    ) {
+                        Text(text = "Watch trailer")
+                    }
+                }
+
+                TextButton(
                     onClick = {
-                        onWatchTrailer(state.video.videoKey)
+                        showPlayer = false
+                        onWatchTrailer(video.videoKey)
                     }
                 ) {
-                    Text(text = "Watch trailer")
+                    Text(text = "Open in YouTube")
                 }
             }
 
