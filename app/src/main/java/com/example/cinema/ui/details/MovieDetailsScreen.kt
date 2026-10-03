@@ -34,6 +34,8 @@ fun MovieDetailsScreen(
     onBackClick: () -> Unit,
     onRetry: () -> Unit,
     onRetryCast: () -> Unit,
+    onRetryTrailer: () -> Unit,
+    onWatchTrailer: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -146,6 +148,12 @@ fun MovieDetailsScreen(
                     },
                     style = MaterialTheme.typography.bodyLarge
                 )
+                TrailerSection(
+                    state = uiState.trailerState,
+                    onRetry = onRetryTrailer,
+                    onWatchTrailer = onWatchTrailer
+                )
+
                 CastSection(
                     state = uiState.castState,
                     onRetry = onRetryCast

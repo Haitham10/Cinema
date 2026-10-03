@@ -28,6 +28,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.cinema.ui.home.HomeViewModel
 import com.example.cinema.ui.details.MovieDetailsViewModel
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 
 private enum class MainDestination(
     val route: String,
@@ -45,7 +50,7 @@ fun CinemaApp(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
-
+    val context = LocalContext.current
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = MainDestination.entries.any { destination ->
@@ -138,7 +143,31 @@ fun CinemaApp(
                         navController.popBackStack()
                     },
                     onRetry = movieDetailsViewModel::retry,
-                    onRetryCast = movieDetailsViewModel::retryCast
+                    onRetryCast = movieDetailsViewModel::retryCast,
+                    onRetryTrailer = movieDetailsViewModel::retryTrailer,
+                    onWatchTrailer = { videoKey ->
+                        val videoUri = Uri.Builder()
+                            .scheme("https")
+                            .authority("www.youtube.com")
+                            .appendPath("watch")
+                            .appendQueryParameter("v", videoKey)
+                            .build()
+
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            videoUri
+                        )
+
+                        try {
+                            context.startActivity(intent)
+                        } catch (exception: ActivityNotFoundException) {
+                            Toast.makeText(
+                                context,
+                                "No app available to open the trailer.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
                 )
             }
         }
