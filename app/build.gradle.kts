@@ -1,4 +1,9 @@
 import java.util.Properties
+import java.io.File
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.process.CommandLineArgumentProvider
 
 plugins {
     alias(libs.plugins.android.application)
@@ -88,4 +93,25 @@ dependencies {
     implementation(libs.youtube.player.core)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+}
+class RoomSchemaArgProvider(
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    val schemaDir: File
+) : CommandLineArgumentProvider {
+
+    override fun asArguments(): Iterable<String> {
+        return listOf(
+            "room.schemaLocation=${schemaDir.absolutePath}"
+        )
+    }
+}
+
+ksp {
+    arg(
+        RoomSchemaArgProvider(
+            schemaDir = file("schemas")
+        )
+    )
 }
