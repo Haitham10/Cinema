@@ -15,6 +15,7 @@ import org.junit.Test
 import kotlinx.coroutines.test.runTest
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.selector.TrailerSelector
+import com.example.cinema.testing.FakeFavouritesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsCastTest {
@@ -45,7 +46,8 @@ class MovieDetailsCastTest {
                 mapOf("movieId" to movie.id)
             ),
             repository = repository ,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = FakeFavouritesRepository()
         )
     }
 

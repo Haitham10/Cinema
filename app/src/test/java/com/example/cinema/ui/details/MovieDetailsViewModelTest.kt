@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.selector.TrailerSelector
+import com.example.cinema.testing.FakeFavouritesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsViewModelTest {
@@ -38,7 +39,8 @@ class MovieDetailsViewModelTest {
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
             repository = repository ,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = FakeFavouritesRepository()
         )
 
         advanceUntilIdle()
@@ -62,7 +64,8 @@ class MovieDetailsViewModelTest {
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
             repository = repository ,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = FakeFavouritesRepository()
         )
 
         advanceUntilIdle()
@@ -85,7 +88,8 @@ class MovieDetailsViewModelTest {
         MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
             repository = repository ,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = FakeFavouritesRepository()
         )
     }
 
@@ -101,7 +105,8 @@ class MovieDetailsViewModelTest {
                 mapOf("movieId" to expectedMovie.id)
             ),
             repository = repository ,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = FakeFavouritesRepository()
         )
 
         advanceUntilIdle()
@@ -126,7 +131,8 @@ class MovieDetailsViewModelTest {
                 mapOf("movieId" to expectedMovie.id)
             ),
             repository = repository ,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector() ,
+            favouritesRepository = FakeFavouritesRepository()
         )
 
         advanceUntilIdle()

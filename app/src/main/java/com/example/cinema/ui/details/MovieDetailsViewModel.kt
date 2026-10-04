@@ -3,23 +3,28 @@ package com.example.cinema.ui.details
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinema.domain.repository.FavouritesRepository
 import com.example.cinema.domain.repository.MoviesRepository
 import com.example.cinema.domain.selector.TrailerSelector
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: MoviesRepository,
-    private val trailerSelector: TrailerSelector
+    private val trailerSelector: TrailerSelector,
+    private val favouritesRepository: FavouritesRepository
 ) : ViewModel() {
 
     private val movieId: Int =
@@ -36,9 +41,17 @@ class MovieDetailsViewModel @Inject constructor(
     private var movieJob: Job? = null
     private var castJob: Job? = null
     private var trailerJob: Job? = null
+    private val _favouriteUiState =
+        MutableStateFlow(FavouriteUiState())
+
+    val favouriteUiState: StateFlow<FavouriteUiState> =
+        _favouriteUiState.asStateFlow()
+
+    private var favouriteObservationJob: Job? = null
 
     init {
         loadMovie()
+        observeFavourite()
     }
 
     fun retry() {
@@ -167,6 +180,91 @@ class MovieDetailsViewModel @Inject constructor(
                 currentState.copy(trailerState = trailerState)
             } else {
                 currentState
+            }
+        }
+    }
+    private fun observeFavourite() {
+        favouriteObservationJob?.cancel()
+
+        _favouriteUiState.update { current ->
+            current.copy(
+                isFavourite = null,
+                errorMessage = null
+            )
+        }
+
+        favouriteObservationJob = viewModelScope.launch {
+            try {
+                favouritesRepository.observeIsFavourite(movieId)
+                    .collect { isFavourite ->
+                        _favouriteUiState.update { current ->
+                            current.copy(
+                                isFavourite = isFavourite
+                            )
+                        }
+                    }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _favouriteUiState.update { current ->
+                    current.copy(
+                        isFavourite = null,
+                        errorMessage =
+                            "Unable to read favourite status. Please try again."
+                    )
+                }
+            }
+        }
+    }
+    fun retryFavourite() {
+        val current = _favouriteUiState.value
+
+        if (current.isSaving) return
+        if (current.isFavourite != null) return
+        if (current.errorMessage == null) return
+
+        observeFavourite()
+    }
+
+    fun toggleFavourite() {
+        val details =
+            _uiState.value as? MovieDetailsUiState.Success
+                ?: return
+
+        val favouriteState = _favouriteUiState.value
+        val wasFavourite = favouriteState.isFavourite ?: return
+
+        if (favouriteState.isSaving) return
+
+        _favouriteUiState.update { current ->
+            current.copy(
+                isSaving = true,
+                errorMessage = null
+            )
+        }
+
+        viewModelScope.launch {
+            try {
+                if (wasFavourite) {
+                    favouritesRepository.deleteById(movieId)
+                } else {
+                    favouritesRepository.save(details.movie)
+                }
+
+                observeFavourite()
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _favouriteUiState.update { current ->
+                    current.copy(
+                        errorMessage =
+                            "Unable to update favourite. Please try again."
+                    )
+                }
+            } finally {
+                _favouriteUiState.update { current ->
+                    current.copy(isSaving = false)
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.repository.MoviesRepository
 import com.example.cinema.domain.selector.TrailerSelector
+import com.example.cinema.testing.FakeFavouritesRepository
 import com.example.cinema.testing.MainDispatcherRule
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
@@ -54,7 +55,8 @@ class MovieDetailsTrailerTest {
                 mapOf("movieId" to movie.id)
             ),
             repository = repository,
-            trailerSelector = TrailerSelector()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = FakeFavouritesRepository()
         )
     }
 
