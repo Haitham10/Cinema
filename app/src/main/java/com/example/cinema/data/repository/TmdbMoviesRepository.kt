@@ -45,4 +45,18 @@ class TmdbMoviesRepository @Inject constructor(
                 videoDto.toDomain()
             }
     }
+    override suspend fun searchMovies(query: String): List<Movie> {
+        val trimmedQuery = query.trim()
+
+        if (trimmedQuery.isBlank()) {
+            return emptyList()
+        }
+
+        return api
+            .searchMovies(query = trimmedQuery)
+            .results
+            .map { movieDto ->
+                movieDto.toDomain()
+            }
+    }
 }

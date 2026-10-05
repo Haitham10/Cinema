@@ -371,6 +371,9 @@ private class FavouriteTestMoviesRepository(
     override suspend fun getMovieVideos(movieId: Int): List<MovieVideo> {
         return emptyList()
     }
+    override suspend fun searchMovies(query: String): List<Movie> {
+        error("searchMovies is not configured for this test")
+    }
 }
 
 private class ControlledFavouritesRepository(

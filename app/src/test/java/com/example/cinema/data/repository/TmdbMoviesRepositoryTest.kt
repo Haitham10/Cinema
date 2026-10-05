@@ -12,8 +12,10 @@ import com.example.cinema.data.remote.dto.CastDto
 import com.example.cinema.data.remote.dto.VideosResponseDto
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.data.remote.dto.VideoDto
+import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.model.MovieVideo
-
+import java.io.IOException
+import org.junit.Assert.fail
 class TmdbMoviesRepositoryTest {
 
     private val movieDto = MovieDto(
@@ -84,6 +86,29 @@ class TmdbMoviesRepositoryTest {
         private val videosResponse: VideosResponseDto =
             VideosResponseDto()
     ) : TmdbApiService {
+        var searchResponse = MoviesResponseDto(
+            page = 1,
+            results = emptyList(),
+            totalPages = 0,
+            totalResults = 0
+        )
+
+        var searchError: Exception? = null
+
+        var searchRequestCount = 0
+            private set
+
+        var requestedQuery: String? = null
+            private set
+
+        var requestedSearchLanguage: String? = null
+            private set
+
+        var requestedSearchPage: Int? = null
+            private set
+
+        var requestedIncludeAdult: Boolean? = null
+            private set
 
         var popularRequestCount: Int = 0
             private set
@@ -126,6 +151,22 @@ class TmdbMoviesRepositoryTest {
         ): VideosResponseDto {
             requestedVideosMovieId = movieId
             return videosResponse
+        }
+        override suspend fun searchMovies(
+            query: String,
+            language: String,
+            page: Int,
+            includeAdult: Boolean
+        ): MoviesResponseDto {
+            searchRequestCount++
+            requestedQuery = query
+            requestedSearchLanguage = language
+            requestedSearchPage = page
+            requestedIncludeAdult = includeAdult
+
+            searchError?.let { throw it }
+
+            return searchResponse
         }
 
 
@@ -257,5 +298,97 @@ class TmdbMoviesRepositoryTest {
         val videos = repository.getMovieVideos(42)
 
         assertEquals(emptyList<MovieVideo>(), videos)
+    }
+    private fun createSearchApi(): FakeTmdbApiService {
+        return FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto
+        )
+    }
+
+    @Test
+    fun searchMovies_trimsQuery_andReturnsMappedResults() = runTest {
+        val fakeApi = createSearchApi().apply {
+            searchResponse = MoviesResponseDto(
+                page = 1,
+                results = listOf(movieDto),
+                totalPages = 1,
+                totalResults = 1
+            )
+        }
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val result = repository.searchMovies("  Test movie  ")
+
+        assertEquals(1, fakeApi.searchRequestCount)
+        assertEquals("Test movie", fakeApi.requestedQuery)
+        assertEquals("en-US", fakeApi.requestedSearchLanguage)
+        assertEquals(1, fakeApi.requestedSearchPage)
+        assertEquals(false, fakeApi.requestedIncludeAdult)
+
+        assertEquals(1, result.size)
+
+        val actual = result.single()
+
+        assertEquals(movieDto.id, actual.id)
+        assertEquals(movieDto.title, actual.title)
+        assertEquals(movieDto.overview, actual.overview)
+        assertEquals(movieDto.voteAverage, actual.rating, 0.0001)
+        assertEquals(movieDto.releaseDate, actual.releaseDate)
+        assertEquals(movieDto.genreIds, actual.genreIds)
+        assertEquals(
+            "https://image.tmdb.org/t/p/w500/poster.jpg",
+            actual.posterUrl
+        )
+    }
+
+    @Test
+    fun searchMovies_blankQuery_doesNotCallApi() = runTest {
+        val fakeApi = createSearchApi()
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        for (query in listOf("", "   ", "\n\t")) {
+            val result = repository.searchMovies(query)
+
+            assertEquals(emptyList<Movie>(), result)
+        }
+
+        assertEquals(0, fakeApi.searchRequestCount)
+    }
+
+    @Test
+    fun searchMovies_emptyResponse_returnsEmptyList() = runTest {
+        val fakeApi = createSearchApi()
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val result = repository.searchMovies("Unknown movie")
+
+        assertEquals(emptyList<Movie>(), result)
+        assertEquals(1, fakeApi.searchRequestCount)
+        assertEquals("Unknown movie", fakeApi.requestedQuery)
+    }
+
+    @Test
+    fun searchMovies_apiFails_propagatesException() = runTest {
+        val fakeApi = createSearchApi().apply {
+            searchError = IOException("Connection failed")
+        }
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        try {
+            repository.searchMovies("Batman")
+            fail("Expected IOException")
+        } catch (exception: IOException) {
+            assertEquals("Connection failed", exception.message)
+        }
+
+        assertEquals(1, fakeApi.searchRequestCount)
     }
 }

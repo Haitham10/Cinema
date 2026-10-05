@@ -198,6 +198,9 @@ private class DetailsMoviesRepository(
     override suspend fun getMovieVideos(movieId: Int): List<MovieVideo> {
         error("Not used by GetMovieDetailsUseCase")
     }
+    override suspend fun searchMovies(query: String): List<Movie> {
+        error("searchMovies is not configured for this test")
+    }
 }
 
 private class DetailsFavouritesRepository(

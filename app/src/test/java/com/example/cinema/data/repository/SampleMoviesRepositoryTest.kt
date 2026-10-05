@@ -46,4 +46,26 @@ class SampleMoviesRepositoryTest {
 
         assertNull(result)
     }
+    @Test
+    fun searchMovies_trimsQuery_andIgnoresCase() = runTest {
+        val result = repository.searchMovies("  FIRST  ")
+
+        assertEquals(listOf(firstMovie), result)
+    }
+
+    @Test
+    fun searchMovies_partialTitle_returnsAllMatches() = runTest {
+        val result = repository.searchMovies("mov")
+
+        assertEquals(testMovies, result)
+    }
+
+    @Test
+    fun searchMovies_blankOrUnmatchedQuery_returnsEmptyList() = runTest {
+        for (query in listOf("", "   ", "Unknown title")) {
+            val result = repository.searchMovies(query)
+
+            assertEquals(emptyList<Movie>(), result)
+        }
+    }
 }

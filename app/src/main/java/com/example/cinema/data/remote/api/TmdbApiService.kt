@@ -33,4 +33,12 @@ interface TmdbApiService {
         @Path("movieId") movieId: Int,
         @Query("language") language: String = "en-US"
     ): VideosResponseDto
+
+    @GET("search/movie")
+    suspend fun searchMovies(
+        @Query("query") query: String,
+        @Query("language") language: String = "en-US",
+        @Query("page") page: Int = 1,
+        @Query("include_adult") includeAdult: Boolean = false
+    ): MoviesResponseDto
 }

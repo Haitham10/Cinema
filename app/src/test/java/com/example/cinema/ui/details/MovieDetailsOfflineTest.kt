@@ -105,4 +105,7 @@ private class OfflineMoviesRepository : MoviesRepository {
     override suspend fun getMovieVideos(movieId: Int): List<MovieVideo> {
         throw IOException("Offline")
     }
+    override suspend fun searchMovies(query: String): List<Movie> {
+        error("searchMovies is not configured for this test")
+    }
 }

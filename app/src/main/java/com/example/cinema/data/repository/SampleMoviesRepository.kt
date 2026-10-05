@@ -27,4 +27,19 @@ class SampleMoviesRepository(
     ): List<MovieVideo> {
         return emptyList()
     }
+
+    override suspend fun searchMovies(query: String): List<Movie> {
+        val trimmedQuery = query.trim()
+
+        if (trimmedQuery.isBlank()) {
+            return emptyList()
+        }
+
+        return movies.filter { movie ->
+            movie.title.contains(
+                other = trimmedQuery,
+                ignoreCase = true
+            )
+        }
+    }
 }

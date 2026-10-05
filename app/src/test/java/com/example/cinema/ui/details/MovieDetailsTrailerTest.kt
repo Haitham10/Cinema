@@ -275,5 +275,9 @@ class MovieDetailsTrailerTest {
             videoError?.let { throw it }
             return videos
         }
+
+        override suspend fun searchMovies(query: String): List<Movie> {
+            error("searchMovies is not configured for this test")
+        }
     }
 }
