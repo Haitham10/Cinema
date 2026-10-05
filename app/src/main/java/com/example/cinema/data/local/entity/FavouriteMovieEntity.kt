@@ -14,5 +14,7 @@ data class FavouriteMovieEntity(
     val backdropUrl: String?,
     val releaseDate: String,
     val genreIdsJson: String,
-    val savedAt: Long
+    val savedAt: Long ,
+    val localPosterPath: String? = null,
+    val localBackdropPath: String? = null
 )

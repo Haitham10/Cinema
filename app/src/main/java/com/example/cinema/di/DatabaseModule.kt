@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.cinema.data.local.CinemaDatabase
 import com.example.cinema.data.local.dao.FavouriteMoviesDao
+import com.example.cinema.data.local.migration.MIGRATION_1_2
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,7 +25,9 @@ object DatabaseModule {
             context,
             CinemaDatabase::class.java,
             "cinema_database"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     @Provides

@@ -7,7 +7,7 @@ import com.example.cinema.data.local.entity.FavouriteMovieEntity
 
 @Database(
     entities = [FavouriteMovieEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class CinemaDatabase : RoomDatabase() {
