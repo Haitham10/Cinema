@@ -31,10 +31,13 @@ import coil3.compose.AsyncImage
 @Composable
 fun MovieDetailsScreen(
     uiState: MovieDetailsUiState,
+    favouriteUiState: FavouriteUiState,
     onBackClick: () -> Unit,
     onRetry: () -> Unit,
     onRetryCast: () -> Unit,
     onRetryTrailer: () -> Unit,
+    onToggleFavourite: () -> Unit,
+    onRetryFavourite: () -> Unit,
     onWatchTrailer: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -126,6 +129,12 @@ fun MovieDetailsScreen(
                 Text(
                     text = "${movie.rating} / 10",
                     style = MaterialTheme.typography.bodyLarge
+                )
+
+                FavouriteSection(
+                    state = favouriteUiState,
+                    onToggle = onToggleFavourite,
+                    onRetry = onRetryFavourite
                 )
 
                 Text(

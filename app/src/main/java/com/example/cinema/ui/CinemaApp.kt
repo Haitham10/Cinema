@@ -137,11 +137,18 @@ fun CinemaApp(
 
                 val uiState by movieDetailsViewModel.uiState
                     .collectAsStateWithLifecycle()
+
+                val favouriteUiState by movieDetailsViewModel.favouriteUiState
+                    .collectAsStateWithLifecycle()
+
                 MovieDetailsScreen(
                     uiState = uiState,
                     onBackClick = {
                         navController.popBackStack()
                     },
+                    favouriteUiState = favouriteUiState,
+                    onToggleFavourite = movieDetailsViewModel::toggleFavourite,
+                    onRetryFavourite = movieDetailsViewModel::retryFavourite,
                     onRetry = movieDetailsViewModel::retry,
                     onRetryCast = movieDetailsViewModel::retryCast,
                     onRetryTrailer = movieDetailsViewModel::retryTrailer,
