@@ -95,6 +95,7 @@ fun FavouritesScreen(
                                         movie.rating
                                     ),
                                     posterUrl = movie.posterUrl,
+                                    localPosterPath = movie.localPosterPath,
                                     onClick = {
                                         onMovieClick(movie.id)
                                     },

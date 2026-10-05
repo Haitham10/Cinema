@@ -27,7 +27,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-
+import androidx.compose.runtime.key
+import java.io.File
 @Composable
 fun MovieDetailsScreen(
     uiState: MovieDetailsUiState,
@@ -62,18 +63,73 @@ fun MovieDetailsScreen(
             is MovieDetailsUiState.Success -> {
                 val movie = uiState.movie
 
-                val backdropUrl = movie.backdropUrl
-                    ?.takeIf { it.isNotBlank() }
 
-                val imageUrl = backdropUrl
-                    ?: movie.posterUrl?.takeIf { it.isNotBlank() }
+                val imageSources = remember(
+                    movie.id,
+                    movie.localBackdropPath,
+                    movie.localPosterPath,
+                    movie.backdropUrl,
+                    movie.posterUrl
+                ) {
+                    buildList {
+                        movie.localBackdropPath
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { path ->
+                                add(
+                                    DetailsImageSource(
+                                        model = File(path),
+                                        aspectRatio = 16f / 9f
+                                    )
+                                )
+                            }
 
-                var imageMessage by remember(imageUrl) {
+                        movie.localPosterPath
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { path ->
+                                add(
+                                    DetailsImageSource(
+                                        model = File(path),
+                                        aspectRatio = 2f / 3f
+                                    )
+                                )
+                            }
+
+                        movie.backdropUrl
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { url ->
+                                add(
+                                    DetailsImageSource(
+                                        model = url,
+                                        aspectRatio = 16f / 9f
+                                    )
+                                )
+                            }
+
+                        movie.posterUrl
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { url ->
+                                add(
+                                    DetailsImageSource(
+                                        model = url,
+                                        aspectRatio = 2f / 3f
+                                    )
+                                )
+                            }
+                    }
+                }
+
+                var sourceIndex by remember(movie.id, imageSources) {
+                    mutableStateOf(0)
+                }
+
+                val imageSource = imageSources.getOrNull(sourceIndex)
+
+                var imageMessage by remember(movie.id, imageSources, sourceIndex) {
                     mutableStateOf<String?>(
-                        if (imageUrl == null) {
-                            "No image available"
-                        } else {
-                            "Loading image..."
+                        when {
+                            imageSources.isEmpty() -> "No image available"
+                            imageSource == null -> "Image unavailable"
+                            else -> "Loading image..."
                         }
                     )
                 }
@@ -82,34 +138,32 @@ fun MovieDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(
-                            if (backdropUrl != null) {
-                                16f / 9f
-                            } else {
-                                2f / 3f
-                            }
+                            imageSource?.aspectRatio
+                                ?: imageSources.lastOrNull()?.aspectRatio
+                                ?: (16f / 9f)
                         )
                         .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant
-                        ),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (imageUrl != null) {
-                        AsyncImage(
-                            model = imageUrl,
-                            contentDescription = null,
-                            modifier = Modifier.matchParentSize(),
-                            contentScale = ContentScale.Crop,
-                            onLoading = {
-                                imageMessage = "Loading image..."
-                            },
-                            onSuccess = {
-                                imageMessage = null
-                            },
-                            onError = {
-                                imageMessage = "Image unavailable"
-                            }
-                        )
+                    if (imageSource != null) {
+                        key(movie.id, imageSources, sourceIndex) {
+                            AsyncImage(
+                                model = imageSource.model,
+                                contentDescription = null,
+                                modifier = Modifier.matchParentSize(),
+                                contentScale = ContentScale.Crop,
+                                onLoading = {
+                                    imageMessage = "Loading image..."
+                                },
+                                onSuccess = {
+                                    imageMessage = null
+                                },
+                                onError = {
+                                    sourceIndex++
+                                }
+                            )
+                        }
                     }
 
                     imageMessage?.let { message ->
@@ -191,3 +245,8 @@ fun MovieDetailsScreen(
         }
     }
 }
+
+private data class DetailsImageSource(
+    val model: Any,
+    val aspectRatio: Float
+)

@@ -8,5 +8,7 @@ data class Movie(
     val posterUrl: String? = null,
     val backdropUrl: String? = null,
     val releaseDate: String = "",
-    val genreIds: List<Int> = emptyList()
+    val genreIds: List<Int> = emptyList(),
+    val localPosterPath: String? = null,
+    val localBackdropPath: String? = null
 )

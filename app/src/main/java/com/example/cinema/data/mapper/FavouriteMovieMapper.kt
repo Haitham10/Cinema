@@ -15,7 +15,9 @@ fun Movie.toFavouriteEntity(savedAt: Long): FavouriteMovieEntity {
         backdropUrl = backdropUrl,
         releaseDate = releaseDate,
         genreIdsJson = Json.encodeToString(genreIds),
-        savedAt = savedAt
+        savedAt = savedAt,
+        localPosterPath = localPosterPath,
+        localBackdropPath = localBackdropPath
     )
 }
 
@@ -28,6 +30,8 @@ fun FavouriteMovieEntity.toDomain(): Movie {
         posterUrl = posterUrl,
         backdropUrl = backdropUrl,
         releaseDate = releaseDate,
-        genreIds = Json.decodeFromString<List<Int>>(genreIdsJson)
+        genreIds = Json.decodeFromString<List<Int>>(genreIdsJson),
+        localPosterPath = localPosterPath,
+        localBackdropPath = localBackdropPath
     )
 }

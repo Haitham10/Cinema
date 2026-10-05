@@ -72,4 +72,45 @@ class FavouriteMovieMapperTest {
         assertEquals("[]", entity.genreIdsJson)
         assertEquals(original, restored)
     }
+    @Test
+    fun toFavouriteEntity_preservesLocalImagePaths() {
+        val original = movie.copy(
+            localPosterPath = "/test/poster.image",
+            localBackdropPath = "/test/backdrop.image"
+        )
+
+        val result = original.toFavouriteEntity(savedAt = 1_000L)
+
+        assertEquals("/test/poster.image", result.localPosterPath)
+        assertEquals("/test/backdrop.image", result.localBackdropPath)
+
+        assertEquals(original.posterUrl, result.posterUrl)
+        assertEquals(original.backdropUrl, result.backdropUrl)
+    }
+
+    @Test
+    fun toDomain_restoresLocalImagePaths() {
+        val stored = FavouriteMovieEntity(
+            id = movie.id,
+            title = movie.title,
+            rating = movie.rating,
+            overview = movie.overview,
+            posterUrl = movie.posterUrl,
+            backdropUrl = movie.backdropUrl,
+            releaseDate = movie.releaseDate,
+            genreIdsJson = "[28,12]",
+            savedAt = 1_000L,
+            localPosterPath = "/test/poster.image",
+            localBackdropPath = "/test/backdrop.image"
+        )
+
+        val result = stored.toDomain()
+
+        val expected = movie.copy(
+            localPosterPath = "/test/poster.image",
+            localBackdropPath = "/test/backdrop.image"
+        )
+
+        assertEquals(expected, result)
+    }
 }

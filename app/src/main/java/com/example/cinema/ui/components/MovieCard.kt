@@ -21,18 +21,38 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-
+import java.io.File
 @Composable
 fun MovieCard(
     title: String,
     rating: String,
     onClick: () -> Unit,
     posterUrl: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    localPosterPath: String? = null
 ) {
-    var posterMessage by remember(posterUrl) {
+    val remoteUrl = posterUrl?.takeIf { it.isNotBlank() }
+    val localPath = localPosterPath?.takeIf { it.isNotBlank() }
+
+    var localImageFailed by remember(localPath, remoteUrl) {
+        mutableStateOf(false)
+    }
+
+    val imageModel: Any? = remember(
+        localPath,
+        remoteUrl,
+        localImageFailed
+    ) {
+        if (localPath != null && !localImageFailed) {
+            File(localPath)
+        } else {
+            remoteUrl
+        }
+    }
+
+    var posterMessage by remember(imageModel) {
         mutableStateOf<String?>(
-            if (posterUrl.isNullOrBlank()) {
+            if (imageModel == null) {
                 "No poster available"
             } else {
                 "Loading poster..."
@@ -54,9 +74,9 @@ fun MovieCard(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (!posterUrl.isNullOrBlank()) {
+                if (imageModel != null) {
                     AsyncImage(
-                        model = posterUrl,
+                        model = imageModel,
                         contentDescription = null,
                         modifier = Modifier.matchParentSize(),
                         contentScale = ContentScale.Crop,
@@ -67,7 +87,11 @@ fun MovieCard(
                             posterMessage = null
                         },
                         onError = {
-                            posterMessage = "Poster unavailable"
+                            if (imageModel is File && remoteUrl != null) {
+                                localImageFailed = true
+                            } else {
+                                posterMessage = "Poster unavailable"
+                            }
                         }
                     )
                 }
