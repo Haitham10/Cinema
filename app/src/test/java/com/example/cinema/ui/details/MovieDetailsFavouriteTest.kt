@@ -8,6 +8,8 @@ import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.repository.FavouritesRepository
 import com.example.cinema.domain.repository.MoviesRepository
 import com.example.cinema.domain.selector.TrailerSelector
+import com.example.cinema.domain.usecase.GetMovieDetailsUseCase
+import com.example.cinema.testing.FakeFavouritesRepository
 import com.example.cinema.testing.MainDispatcherRule
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
@@ -53,16 +55,22 @@ class MovieDetailsFavouriteTest {
         favourites: ControlledFavouritesRepository,
         movieGate: CompletableDeferred<Unit>? = null
     ): MovieDetailsViewModel {
+        val moviesRepository = FavouriteTestMoviesRepository(
+            movie = movie,
+            movieGate = movieGate
+        )
+
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to movie.id)
             ),
-            repository = FavouriteTestMoviesRepository(
-                movie = movie,
-                movieGate = movieGate
-            ),
+            repository = moviesRepository,
             trailerSelector = TrailerSelector(),
-            favouritesRepository = favourites
+            favouritesRepository = favourites,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = moviesRepository,
+                favouritesRepository = favourites
+            )
         )
 
         viewModels.add(viewModel)

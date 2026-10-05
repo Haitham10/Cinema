@@ -15,6 +15,7 @@ import org.junit.Test
 import kotlinx.coroutines.test.runTest
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.selector.TrailerSelector
+import com.example.cinema.domain.usecase.GetMovieDetailsUseCase
 import com.example.cinema.testing.FakeFavouritesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -41,13 +42,19 @@ class MovieDetailsCastTest {
     private fun createViewModel(
         repository: MoviesRepository
     ): MovieDetailsViewModel {
+        val favouritesRepository = FakeFavouritesRepository()
+
         return MovieDetailsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to movie.id)
             ),
-            repository = repository ,
+            repository = repository,
             trailerSelector = TrailerSelector(),
-            favouritesRepository = FakeFavouritesRepository()
+            favouritesRepository = favouritesRepository,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = repository,
+                favouritesRepository = favouritesRepository
+            )
         )
     }
 

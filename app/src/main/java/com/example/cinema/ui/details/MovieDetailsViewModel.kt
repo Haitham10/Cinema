@@ -18,13 +18,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.cinema.domain.usecase.GetMovieDetailsUseCase
 
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: MoviesRepository,
     private val trailerSelector: TrailerSelector,
-    private val favouritesRepository: FavouritesRepository
+    private val favouritesRepository: FavouritesRepository,
+    private val getMovieDetailsUseCase: GetMovieDetailsUseCase
 ) : ViewModel() {
 
     private val movieId: Int =
@@ -88,7 +90,7 @@ class MovieDetailsViewModel @Inject constructor(
 
         movieJob = viewModelScope.launch {
             try {
-                val movie = repository.getMovieById(movieId)
+                val movie = getMovieDetailsUseCase(movieId)
 
                 if (movie == null) {
                     _uiState.value = MovieDetailsUiState.NotFound

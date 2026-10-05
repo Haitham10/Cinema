@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.selector.TrailerSelector
+import com.example.cinema.domain.usecase.GetMovieDetailsUseCase
 import com.example.cinema.testing.FakeFavouritesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -36,11 +37,17 @@ class MovieDetailsViewModelTest {
             mapOf("movieId" to expectedMovie.id)
         )
 
+        val favouritesRepository = FakeFavouritesRepository()
+
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
-            repository = repository ,
+            repository = repository,
             trailerSelector = TrailerSelector(),
-            favouritesRepository = FakeFavouritesRepository()
+            favouritesRepository = favouritesRepository,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = repository,
+                favouritesRepository = favouritesRepository
+            )
         )
 
         advanceUntilIdle()
@@ -61,11 +68,17 @@ class MovieDetailsViewModelTest {
             mapOf("movieId" to 999)
         )
 
+        val favouritesRepository = FakeFavouritesRepository()
+
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
-            repository = repository ,
+            repository = repository,
             trailerSelector = TrailerSelector(),
-            favouritesRepository = FakeFavouritesRepository()
+            favouritesRepository = favouritesRepository,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = repository,
+                favouritesRepository = favouritesRepository
+            )
         )
 
         advanceUntilIdle()
@@ -85,11 +98,17 @@ class MovieDetailsViewModelTest {
         )
 
         // Act
+        val favouritesRepository = FakeFavouritesRepository()
+
         MovieDetailsViewModel(
             savedStateHandle = savedStateHandle,
-            repository = repository ,
+            repository = repository,
             trailerSelector = TrailerSelector(),
-            favouritesRepository = FakeFavouritesRepository()
+            favouritesRepository = favouritesRepository,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = repository,
+                favouritesRepository = favouritesRepository
+            )
         )
     }
 
@@ -99,14 +118,19 @@ class MovieDetailsViewModelTest {
             movies = listOf(expectedMovie),
             error = java.io.IOException("Connection failed")
         )
+        val favouritesRepository = FakeFavouritesRepository()
 
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to expectedMovie.id)
             ),
-            repository = repository ,
+            repository = repository,
             trailerSelector = TrailerSelector(),
-            favouritesRepository = FakeFavouritesRepository()
+            favouritesRepository = favouritesRepository,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = repository,
+                favouritesRepository = favouritesRepository
+            )
         )
 
         advanceUntilIdle()
@@ -125,14 +149,20 @@ class MovieDetailsViewModelTest {
             movies = listOf(expectedMovie),
             error = java.io.IOException("Connection failed")
         )
+        val favouritesRepository = FakeFavouritesRepository()
+
 
         val viewModel = MovieDetailsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf("movieId" to expectedMovie.id)
             ),
             repository = repository ,
-            trailerSelector = TrailerSelector() ,
-            favouritesRepository = FakeFavouritesRepository()
+            trailerSelector = TrailerSelector(),
+            favouritesRepository = favouritesRepository,
+            getMovieDetailsUseCase = GetMovieDetailsUseCase(
+                moviesRepository = repository,
+                favouritesRepository = favouritesRepository
+            )
         )
 
         advanceUntilIdle()
