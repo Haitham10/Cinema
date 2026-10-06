@@ -1,21 +1,25 @@
 package com.example.cinema.data.repository
 
 import com.example.cinema.data.remote.api.TmdbApiService
+import com.example.cinema.data.remote.dto.CastDto
 import com.example.cinema.data.remote.dto.CreditsResponseDto
+import com.example.cinema.data.remote.dto.GenreDto
+import com.example.cinema.data.remote.dto.GenresResponseDto
 import com.example.cinema.data.remote.dto.MovieDto
 import com.example.cinema.data.remote.dto.MoviesResponseDto
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Test
-import com.example.cinema.data.remote.dto.CastDto
+import com.example.cinema.data.remote.dto.VideoDto
 import com.example.cinema.data.remote.dto.VideosResponseDto
 import com.example.cinema.domain.model.CastMember
-import com.example.cinema.data.remote.dto.VideoDto
+import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.model.MovieVideo
 import java.io.IOException
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
+import org.junit.Test
+
 class TmdbMoviesRepositoryTest {
 
     private val movieDto = MovieDto(
@@ -122,6 +126,18 @@ class TmdbMoviesRepositoryTest {
         var requestedVideosMovieId: Int? = null
             private set
 
+        var genresResponse = GenresResponseDto(
+            genres = emptyList()
+        )
+
+        var genresError: Exception? = null
+
+        var genresRequestCount = 0
+            private set
+
+        var requestedGenresLanguage: String? = null
+            private set
+
         override suspend fun getPopularMovies(
             language: String,
             page: Int
@@ -169,6 +185,16 @@ class TmdbMoviesRepositoryTest {
             return searchResponse
         }
 
+        override suspend fun getMovieGenres(
+            language: String
+        ): GenresResponseDto {
+            genresRequestCount++
+            requestedGenresLanguage = language
+
+            genresError?.let { throw it }
+
+            return genresResponse
+        }
 
     }
 
@@ -390,5 +416,72 @@ class TmdbMoviesRepositoryTest {
         }
 
         assertEquals(1, fakeApi.searchRequestCount)
+    }
+
+    private fun createGenresApi(): FakeTmdbApiService {
+        return FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto
+        )
+    }
+
+    @Test
+    fun getGenres_returnsMappedGenres() = runTest {
+        val fakeApi = createGenresApi().apply {
+            genresResponse = GenresResponseDto(
+                genres = listOf(
+                    GenreDto(id = 28, name = "Action"),
+                    GenreDto(id = 35, name = "Comedy")
+                )
+            )
+        }
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val result = repository.getGenres()
+
+        assertEquals(
+            listOf(
+                Genre(id = 28, name = "Action"),
+                Genre(id = 35, name = "Comedy")
+            ),
+            result
+        )
+        assertEquals(1, fakeApi.genresRequestCount)
+        assertEquals("en-US", fakeApi.requestedGenresLanguage)
+    }
+
+    @Test
+    fun getGenres_emptyResponse_returnsEmptyList() = runTest {
+        val fakeApi = createGenresApi()
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val result = repository.getGenres()
+
+        assertEquals(emptyList<Genre>(), result)
+        assertEquals(1, fakeApi.genresRequestCount)
+    }
+
+    @Test
+    fun getGenres_apiFails_propagatesException() = runTest {
+        val fakeApi = createGenresApi().apply {
+            genresError = IOException("Connection failed")
+        }
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        try {
+            repository.getGenres()
+            fail("Expected IOException")
+        } catch (exception: IOException) {
+            assertEquals("Connection failed", exception.message)
+        }
+
+        assertEquals(1, fakeApi.genresRequestCount)
     }
 }

@@ -13,6 +13,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.MovieVideo
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -139,6 +140,10 @@ class HomeViewModelTest {
 
         override suspend fun searchMovies(query: String): List<Movie> {
             error("searchMovies is not configured for this test")
+        }
+
+        override suspend fun getGenres(): List<Genre> {
+            error("getGenres is not configured for this test")
         }
 
 

@@ -2,6 +2,7 @@ package com.example.cinema.ui.details
 
 import androidx.lifecycle.SavedStateHandle
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.repository.MoviesRepository
 import com.example.cinema.testing.MainDispatcherRule
@@ -195,6 +196,9 @@ class MovieDetailsCastTest {
 
         override suspend fun searchMovies(query: String): List<Movie> {
             error("searchMovies is not configured for this test")
+        }
+        override suspend fun getGenres(): List<Genre> {
+            error("getGenres is not configured for this test")
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.cinema.domain.usecase
 
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.repository.FavouritesRepository
@@ -200,6 +201,9 @@ private class DetailsMoviesRepository(
     }
     override suspend fun searchMovies(query: String): List<Movie> {
         error("searchMovies is not configured for this test")
+    }
+    override suspend fun getGenres(): List<Genre> {
+        error("getGenres is not configured for this test")
     }
 }
 

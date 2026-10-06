@@ -1,6 +1,7 @@
 package com.example.cinema.data.remote.api
 
 import com.example.cinema.data.remote.dto.CreditsResponseDto
+import com.example.cinema.data.remote.dto.GenresResponseDto
 import com.example.cinema.data.remote.dto.MovieDto
 import com.example.cinema.data.remote.dto.MoviesResponseDto
 import com.example.cinema.data.remote.dto.VideosResponseDto
@@ -41,4 +42,9 @@ interface TmdbApiService {
         @Query("page") page: Int = 1,
         @Query("include_adult") includeAdult: Boolean = false
     ): MoviesResponseDto
+
+    @GET("genre/movie/list")
+    suspend fun getMovieGenres(
+        @Query("language") language: String = "en-US"
+    ): GenresResponseDto
 }

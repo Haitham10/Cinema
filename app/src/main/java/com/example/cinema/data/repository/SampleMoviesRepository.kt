@@ -5,6 +5,7 @@ import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.repository.MoviesRepository
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.MovieVideo
+import com.example.cinema.domain.model.Genre
 class SampleMoviesRepository(
     private val movies: List<Movie> = SampleMovies.movies
 ) : MoviesRepository {
@@ -41,5 +42,13 @@ class SampleMoviesRepository(
                 ignoreCase = true
             )
         }
+    }
+    override suspend fun getGenres(): List<Genre> {
+        return listOf(
+            Genre(id = 28, name = "Action"),
+            Genre(id = 35, name = "Comedy"),
+            Genre(id = 18, name = "Drama"),
+            Genre(id = 27, name = "Horror")
+        )
     }
 }

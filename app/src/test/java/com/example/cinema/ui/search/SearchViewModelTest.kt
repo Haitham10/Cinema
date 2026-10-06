@@ -1,6 +1,7 @@
 package com.example.cinema.ui.search
 
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.Movie
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.repository.MoviesRepository
@@ -306,5 +307,9 @@ private class FakeSearchRepository : MoviesRepository {
 
     override suspend fun getMovieVideos(movieId: Int): List<MovieVideo> {
         error("getMovieVideos is not used in Search tests")
+    }
+
+    override suspend fun getGenres(): List<Genre> {
+        error("getGenres is not configured for this test")
     }
 }

@@ -7,6 +7,7 @@ import com.example.cinema.domain.repository.MoviesRepository
 import javax.inject.Inject
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.MovieVideo
+import com.example.cinema.domain.model.Genre
 class TmdbMoviesRepository @Inject constructor(
     private val api: TmdbApiService
 ) : MoviesRepository {
@@ -57,6 +58,14 @@ class TmdbMoviesRepository @Inject constructor(
             .results
             .map { movieDto ->
                 movieDto.toDomain()
+            }
+    }
+    override suspend fun getGenres(): List<Genre> {
+        return api
+            .getMovieGenres()
+            .genres
+            .map { genreDto ->
+                genreDto.toDomain()
             }
     }
 }

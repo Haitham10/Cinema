@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.example.cinema.domain.model.CastMember
+import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.selector.TrailerSelector
 import com.example.cinema.domain.usecase.GetMovieDetailsUseCase
@@ -230,5 +231,9 @@ private class FakeMoviesRepository(
     }
     override suspend fun searchMovies(query: String): List<Movie> {
         error("searchMovies is not configured for this test")
+    }
+
+    override suspend fun getGenres(): List<Genre> {
+        error("getGenres is not configured for this test")
     }
 }
