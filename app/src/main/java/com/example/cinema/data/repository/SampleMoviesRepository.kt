@@ -51,4 +51,12 @@ class SampleMoviesRepository(
             Genre(id = 27, name = "Horror")
         )
     }
+
+    override suspend fun getMoviesByGenre(
+        genreId: Int
+    ): List<Movie> {
+        return movies.filter { movie ->
+            genreId in movie.genreIds
+        }
+    }
 }

@@ -68,4 +68,36 @@ class SampleMoviesRepositoryTest {
             assertEquals(emptyList<Movie>(), result)
         }
     }
+
+    @Test
+    fun getMoviesByGenre_returnsOnlyMatchingMovies() = runTest {
+        val actionMovie = firstMovie.copy(
+            genreIds = listOf(28, 12)
+        )
+        val comedyMovie = secondMovie.copy(
+            genreIds = listOf(35)
+        )
+
+        val repository = SampleMoviesRepository(
+            movies = listOf(actionMovie, comedyMovie)
+        )
+
+        val result = repository.getMoviesByGenre(28)
+
+        assertEquals(listOf(actionMovie), result)
+    }
+
+    @Test
+    fun getMoviesByGenre_withoutMatches_returnsEmptyList() = runTest {
+        val repository = SampleMoviesRepository(
+            movies = listOf(
+                firstMovie.copy(genreIds = listOf(28)),
+                secondMovie.copy(genreIds = emptyList())
+            )
+        )
+
+        val result = repository.getMoviesByGenre(27)
+
+        assertEquals(emptyList<Movie>(), result)
+    }
 }

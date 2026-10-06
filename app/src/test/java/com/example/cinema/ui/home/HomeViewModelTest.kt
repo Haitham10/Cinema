@@ -146,6 +146,12 @@ class HomeViewModelTest {
             error("getGenres is not configured for this test")
         }
 
+        override suspend fun getMoviesByGenre(
+            genreId: Int
+        ): List<Movie> {
+            error("getMoviesByGenre is not configured for this test")
+        }
+
 
     }
 }

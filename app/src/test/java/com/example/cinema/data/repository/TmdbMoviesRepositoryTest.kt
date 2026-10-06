@@ -138,6 +138,33 @@ class TmdbMoviesRepositoryTest {
         var requestedGenresLanguage: String? = null
             private set
 
+        var genreMoviesResponse = MoviesResponseDto(
+            page = 1,
+            results = emptyList(),
+            totalPages = 0,
+            totalResults = 0
+        )
+
+        var genreMoviesError: Exception? = null
+
+        var genreMoviesRequestCount = 0
+            private set
+
+        var requestedGenreId: Int? = null
+            private set
+
+        var requestedGenreMoviesLanguage: String? = null
+            private set
+
+        var requestedGenreMoviesPage: Int? = null
+            private set
+
+        var requestedGenreMoviesSort: String? = null
+            private set
+
+        var requestedGenreMoviesIncludeAdult: Boolean? = null
+            private set
+
         override suspend fun getPopularMovies(
             language: String,
             page: Int
@@ -194,6 +221,25 @@ class TmdbMoviesRepositoryTest {
             genresError?.let { throw it }
 
             return genresResponse
+        }
+
+        override suspend fun getMoviesByGenre(
+            genreId: Int,
+            language: String,
+            page: Int,
+            sortBy: String,
+            includeAdult: Boolean
+        ): MoviesResponseDto {
+            genreMoviesRequestCount++
+            requestedGenreId = genreId
+            requestedGenreMoviesLanguage = language
+            requestedGenreMoviesPage = page
+            requestedGenreMoviesSort = sortBy
+            requestedGenreMoviesIncludeAdult = includeAdult
+
+            genreMoviesError?.let { throw it }
+
+            return genreMoviesResponse
         }
 
     }
@@ -483,5 +529,73 @@ class TmdbMoviesRepositoryTest {
         }
 
         assertEquals(1, fakeApi.genresRequestCount)
+    }
+
+    @Test
+    fun getMoviesByGenre_passesGenreAndReturnsMappedMovies() = runTest {
+        val fakeApi = createGenresApi().apply {
+            genreMoviesResponse = MoviesResponseDto(
+                page = 1,
+                results = listOf(movieDto),
+                totalPages = 1,
+                totalResults = 1
+            )
+        }
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val result = repository.getMoviesByGenre(28)
+
+        assertEquals(1, fakeApi.genreMoviesRequestCount)
+        assertEquals(28, fakeApi.requestedGenreId)
+        assertEquals("en-US", fakeApi.requestedGenreMoviesLanguage)
+        assertEquals(1, fakeApi.requestedGenreMoviesPage)
+        assertEquals(
+            "popularity.desc",
+            fakeApi.requestedGenreMoviesSort
+        )
+        assertEquals(false, fakeApi.requestedGenreMoviesIncludeAdult)
+
+        assertEquals(1, result.size)
+
+        val actual = result.single()
+
+        assertEquals(movieDto.id, actual.id)
+        assertEquals(movieDto.title, actual.title)
+        assertEquals(movieDto.genreIds, actual.genreIds)
+        assertEquals(movieDto.voteAverage, actual.rating, 0.0001)
+        assertEquals(
+            "https://image.tmdb.org/t/p/w500/poster.jpg",
+            actual.posterUrl
+        )
+    }
+
+    @Test
+    fun getMoviesByGenre_emptyResponse_returnsEmptyList() = runTest {
+        val fakeApi = createGenresApi()
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val result = repository.getMoviesByGenre(28)
+
+        assertEquals(emptyList<Movie>(), result)
+        assertEquals(1, fakeApi.genreMoviesRequestCount)
+    }
+
+    @Test
+    fun getMoviesByGenre_apiFails_propagatesException() = runTest {
+        val fakeApi = createGenresApi().apply {
+            genreMoviesError = IOException("Connection failed")
+        }
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        try {
+            repository.getMoviesByGenre(28)
+            fail("Expected IOException")
+        } catch (exception: IOException) {
+            assertEquals("Connection failed", exception.message)
+        }
+
+        assertEquals(1, fakeApi.genreMoviesRequestCount)
     }
 }

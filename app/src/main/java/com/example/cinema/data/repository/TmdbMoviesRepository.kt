@@ -68,4 +68,15 @@ class TmdbMoviesRepository @Inject constructor(
                 genreDto.toDomain()
             }
     }
+
+    override suspend fun getMoviesByGenre(
+        genreId: Int
+    ): List<Movie> {
+        return api
+            .getMoviesByGenre(genreId = genreId)
+            .results
+            .map { movieDto ->
+                movieDto.toDomain()
+            }
+    }
 }

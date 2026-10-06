@@ -236,4 +236,10 @@ private class FakeMoviesRepository(
     override suspend fun getGenres(): List<Genre> {
         error("getGenres is not configured for this test")
     }
+
+    override suspend fun getMoviesByGenre(
+        genreId: Int
+    ): List<Movie> {
+        error("getMoviesByGenre is not configured for this test")
+    }
 }

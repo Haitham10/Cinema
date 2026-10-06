@@ -47,4 +47,13 @@ interface TmdbApiService {
     suspend fun getMovieGenres(
         @Query("language") language: String = "en-US"
     ): GenresResponseDto
+
+    @GET("discover/movie")
+    suspend fun getMoviesByGenre(
+        @Query("with_genres") genreId: Int,
+        @Query("language") language: String = "en-US",
+        @Query("page") page: Int = 1,
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("include_adult") includeAdult: Boolean = false
+    ): MoviesResponseDto
 }
