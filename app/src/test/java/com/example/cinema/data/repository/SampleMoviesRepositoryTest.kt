@@ -100,4 +100,16 @@ class SampleMoviesRepositoryTest {
 
         assertEquals(emptyList<Movie>(), result)
     }
+
+    @Test
+    fun getRandomMovies_returnsAllProvidedMovies() = runTest {
+        val result = repository.getRandomMovies()
+
+        assertEquals(testMovies.size, result.size)
+
+        assertEquals(
+            testMovies.map { movie -> movie.id }.toSet(),
+            result.map { movie -> movie.id }.toSet()
+        )
+    }
 }

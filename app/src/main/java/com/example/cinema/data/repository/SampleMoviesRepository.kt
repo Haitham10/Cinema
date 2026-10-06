@@ -59,4 +59,8 @@ class SampleMoviesRepository(
             genreId in movie.genreIds
         }
     }
+
+    override suspend fun getRandomMovies(): List<Movie> {
+        return movies.shuffled()
+    }
 }

@@ -19,6 +19,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
 import org.junit.Test
+import org.junit.Assert.assertTrue
 
 class TmdbMoviesRepositoryTest {
 
@@ -88,7 +89,13 @@ class TmdbMoviesRepositoryTest {
         private val creditsResponse: CreditsResponseDto =
             CreditsResponseDto(),
         private val videosResponse: VideosResponseDto =
-            VideosResponseDto()
+            VideosResponseDto() ,
+        private val discoverResponse: MoviesResponseDto = MoviesResponseDto(
+            page = 1,
+            results = emptyList(),
+            totalPages = 0,
+            totalResults = 0
+        )
     ) : TmdbApiService {
         var searchResponse = MoviesResponseDto(
             page = 1,
@@ -163,6 +170,9 @@ class TmdbMoviesRepositoryTest {
             private set
 
         var requestedGenreMoviesIncludeAdult: Boolean? = null
+            private set
+
+        var requestedDiscoverPage: Int? = null
             private set
 
         override suspend fun getPopularMovies(
@@ -240,6 +250,15 @@ class TmdbMoviesRepositoryTest {
             genreMoviesError?.let { throw it }
 
             return genreMoviesResponse
+        }
+        override suspend fun getDiscoverMovies(
+            page: Int,
+            language: String,
+            sortBy: String,
+            includeAdult: Boolean
+        ): MoviesResponseDto {
+            requestedDiscoverPage = page
+            return discoverResponse
         }
 
     }
@@ -597,5 +616,37 @@ class TmdbMoviesRepositoryTest {
         }
 
         assertEquals(1, fakeApi.genreMoviesRequestCount)
+    }
+
+    @Test
+    fun getRandomMovies_usesSupportedRandomPageAndReturnsMappedMovies() = runTest {
+        val fakeApi = FakeTmdbApiService(
+            popularResponse = MoviesResponseDto(
+                page = 1,
+                results = emptyList(),
+                totalPages = 0,
+                totalResults = 0
+            ),
+            detailsResponse = movieDto,
+            discoverResponse = MoviesResponseDto(
+                page = 1,
+                results = listOf(movieDto),
+                totalPages = 500,
+                totalResults = 10_000
+            )
+        )
+
+        val repository = TmdbMoviesRepository(fakeApi)
+
+        val movies = repository.getRandomMovies()
+
+        val requestedPage = checkNotNull(
+            fakeApi.requestedDiscoverPage
+        )
+
+        assertTrue(requestedPage in 1..500)
+        assertEquals(1, movies.size)
+        assertEquals(42, movies.first().id)
+        assertEquals("Test movie", movies.first().title)
     }
 }

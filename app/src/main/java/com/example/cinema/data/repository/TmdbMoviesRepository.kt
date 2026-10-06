@@ -8,6 +8,7 @@ import javax.inject.Inject
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.MovieVideo
 import com.example.cinema.domain.model.Genre
+import kotlin.random.Random
 class TmdbMoviesRepository @Inject constructor(
     private val api: TmdbApiService
 ) : MoviesRepository {
@@ -74,6 +75,20 @@ class TmdbMoviesRepository @Inject constructor(
     ): List<Movie> {
         return api
             .getMoviesByGenre(genreId = genreId)
+            .results
+            .map { movieDto ->
+                movieDto.toDomain()
+            }
+    }
+
+    override suspend fun getRandomMovies(): List<Movie> {
+        val randomPage = Random.nextInt(
+            from = 1,
+            until = 501
+        )
+
+        return api
+            .getDiscoverMovies(page = randomPage)
             .results
             .map { movieDto ->
                 movieDto.toDomain()

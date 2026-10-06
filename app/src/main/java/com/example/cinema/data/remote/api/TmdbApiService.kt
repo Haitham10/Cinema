@@ -56,4 +56,12 @@ interface TmdbApiService {
         @Query("sort_by") sortBy: String = "popularity.desc",
         @Query("include_adult") includeAdult: Boolean = false
     ): MoviesResponseDto
+
+    @GET("discover/movie")
+    suspend fun getDiscoverMovies(
+        @Query("page") page: Int,
+        @Query("language") language: String = "en-US",
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("include_adult") includeAdult: Boolean = false
+    ): MoviesResponseDto
 }

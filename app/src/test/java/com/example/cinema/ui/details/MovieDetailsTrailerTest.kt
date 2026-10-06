@@ -290,5 +290,9 @@ class MovieDetailsTrailerTest {
         ): List<Movie> {
             error("getMoviesByGenre is not configured for this test")
         }
+
+        override suspend fun getRandomMovies(): List<Movie> {
+            error("getRandomMovies is not configured for this test")
+        }
     }
 }

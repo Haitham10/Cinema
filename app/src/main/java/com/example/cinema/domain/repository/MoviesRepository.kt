@@ -21,4 +21,6 @@ interface MoviesRepository {
 
     suspend fun getMoviesByGenre(genreId: Int): List<Movie>
 
+    suspend fun getRandomMovies(): List<Movie>
+
 }

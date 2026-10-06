@@ -302,6 +302,10 @@ class HomeViewModelTest {
             }
         }
 
+        override suspend fun getRandomMovies(): List<Movie> {
+            error("getRandomMovies is not configured for this test")
+        }
+
 
     }
 }
