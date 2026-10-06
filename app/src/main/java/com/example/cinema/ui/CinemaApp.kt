@@ -101,7 +101,8 @@ fun CinemaApp(
             composable(route = MainDestination.HOME.route) {
                 val homeViewModel: HomeViewModel = hiltViewModel()
 
-                val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+                val uiState by homeViewModel.uiState
+                    .collectAsStateWithLifecycle()
 
                 HomeScreen(
                     uiState = uiState,
@@ -110,7 +111,9 @@ fun CinemaApp(
                             launchSingleTop = true
                         }
                     },
-                    onRetry = homeViewModel::retry
+                    onRetry = homeViewModel::retry,
+                    onGenreSelected = homeViewModel::selectGenre,
+                    onRetryGenres = homeViewModel::retryGenres
                 )
             }
 
