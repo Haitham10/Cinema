@@ -15,6 +15,11 @@ import org.junit.Test
 import com.example.cinema.domain.model.CastMember
 import com.example.cinema.domain.model.Genre
 import com.example.cinema.domain.model.MovieVideo
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -104,10 +109,140 @@ class HomeViewModelTest {
         assertNull(state.errorMessage)
     }
 
+    @Test
+    fun init_genresFail_moviesStillDisplayed() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = expectedMovies
+        ).apply {
+            genresError = IllegalStateException("Genres failed")
+        }
+
+        val viewModel = HomeViewModel(repository)
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+
+        assertEquals(expectedMovies, state.movies)
+        assertFalse(state.isLoading)
+        assertNull(state.errorMessage)
+
+        assertFalse(state.isGenresLoading)
+        assertEquals(
+            "Unable to load categories. Please try again.",
+            state.genresErrorMessage
+        )
+    }
+
+    @Test
+    fun selectGenre_loadsGenreMovies_thenAllLoadsPopular() = runTest {
+        val actionMovies = listOf(expectedMovies.first())
+
+        val repository = FakeMoviesRepository(
+            movies = expectedMovies
+        ).apply {
+            genreMovies = mapOf(28 to actionMovies)
+        }
+
+        val viewModel = HomeViewModel(repository)
+        advanceUntilIdle()
+
+        assertEquals(repository.genres, viewModel.uiState.value.genres)
+
+        viewModel.selectGenre(28)
+
+        assertEquals(28, viewModel.uiState.value.selectedGenreId)
+        assertTrue(viewModel.uiState.value.isLoading)
+        assertTrue(viewModel.uiState.value.movies.isEmpty())
+
+        advanceUntilIdle()
+
+        assertEquals(listOf(28), repository.requestedGenreIds)
+        assertEquals(actionMovies, viewModel.uiState.value.movies)
+        assertFalse(viewModel.uiState.value.isLoading)
+
+        viewModel.selectGenre(null)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.selectedGenreId)
+        assertEquals(expectedMovies, viewModel.uiState.value.movies)
+        assertEquals(2, repository.getMoviesCallCount)
+    }
+
+    @Test
+    fun retryGenres_afterFailure_doesNotReloadMovies() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = expectedMovies
+        ).apply {
+            genresError = IllegalStateException("Genres failed")
+        }
+
+        val viewModel = HomeViewModel(repository)
+        advanceUntilIdle()
+
+        repository.genresError = null
+
+        viewModel.retryGenres()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+
+        assertEquals(repository.genres, state.genres)
+        assertNull(state.genresErrorMessage)
+        assertFalse(state.isGenresLoading)
+        assertEquals(2, repository.getGenresCallCount)
+
+        assertEquals(1, repository.getMoviesCallCount)
+        assertEquals(expectedMovies, state.movies)
+    }
+
+    @Test
+    fun selectSameGenre_doesNotRequestMoviesAgain() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = expectedMovies
+        ).apply {
+            genreMovies = mapOf(
+                28 to listOf(expectedMovies.first())
+            )
+        }
+
+        val viewModel = HomeViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.selectGenre(28)
+        advanceUntilIdle()
+
+        viewModel.selectGenre(28)
+        advanceUntilIdle()
+
+        assertEquals(listOf(28), repository.requestedGenreIds)
+        assertEquals(28, viewModel.uiState.value.selectedGenreId)
+    }
+
     private class FakeMoviesRepository(
         var movies: List<Movie> = emptyList(),
         var error: Exception? = null
     ) : MoviesRepository {
+
+        var genreMoviesResponder:
+                (suspend (Int) -> List<Movie>)? = null
+
+        val cancelledGenreIds = mutableListOf<Int>()
+
+        
+        var genres: List<Genre> = listOf(
+            Genre(id = 28, name = "Action"),
+            Genre(id = 35, name = "Comedy")
+        )
+
+        var genresError: Exception? = null
+
+        var getGenresCallCount = 0
+            private set
+
+        val requestedGenreIds = mutableListOf<Int>()
+
+        var genreMovies: Map<Int, List<Movie>> = emptyMap()
 
         var getMoviesCallCount: Int = 0
             private set
@@ -143,13 +278,28 @@ class HomeViewModelTest {
         }
 
         override suspend fun getGenres(): List<Genre> {
-            error("getGenres is not configured for this test")
+            getGenresCallCount++
+
+            genresError?.let { throw it }
+
+            return genres
         }
 
         override suspend fun getMoviesByGenre(
             genreId: Int
         ): List<Movie> {
-            error("getMoviesByGenre is not configured for this test")
+            requestedGenreIds.add(genreId)
+
+            return try {
+                genreMoviesResponder?.invoke(genreId)
+                    ?: run {
+                        error?.let { throw it }
+                        genreMovies[genreId].orEmpty()
+                    }
+            } catch (exception: CancellationException) {
+                cancelledGenreIds.add(genreId)
+                throw exception
+            }
         }
 
 
