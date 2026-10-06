@@ -34,7 +34,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import com.example.cinema.ui.favourites.FavouritesViewModel
-
+import com.example.cinema.ui.search.SearchViewModel
 private enum class MainDestination(
     val route: String,
     val label: String,
@@ -133,7 +133,21 @@ fun CinemaApp(
             }
 
             composable(route = MainDestination.SEARCH.route) {
-                SearchScreen()
+                val searchViewModel: SearchViewModel = hiltViewModel()
+
+                val uiState by searchViewModel.uiState
+                    .collectAsStateWithLifecycle()
+
+                SearchScreen(
+                    uiState = uiState,
+                    onQueryChange = searchViewModel::onQueryChange,
+                    onRetry = searchViewModel::retry,
+                    onMovieClick = { movieId ->
+                        navController.navigate("movie_details/$movieId") {
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
 
             composable(route = MainDestination.PROFILE.route) {
