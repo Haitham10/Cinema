@@ -40,6 +40,19 @@ class HomeViewModelTest {
         )
     )
 
+    private val expectedRandomMovies = listOf(
+        Movie(
+            id = 101,
+            title = "Random movie one",
+            rating = 7.4
+        ),
+        Movie(
+            id = 102,
+            title = "Random movie two",
+            rating = 8.1
+        )
+    )
+
     @Test
     fun init_initialStateIsLoading() = runTest {
         val repository = FakeMoviesRepository(
@@ -139,34 +152,91 @@ class HomeViewModelTest {
         val actionMovies = listOf(expectedMovies.first())
 
         val repository = FakeMoviesRepository(
-            movies = expectedMovies
+            movies = expectedMovies,
+            randomMovies = expectedRandomMovies
         ).apply {
-            genreMovies = mapOf(28 to actionMovies)
+            genreMovies = mapOf(
+                28 to actionMovies
+            )
         }
 
         val viewModel = HomeViewModel(repository)
+
         advanceUntilIdle()
 
-        assertEquals(repository.genres, viewModel.uiState.value.genres)
+        assertEquals(
+            repository.genres,
+            viewModel.uiState.value.genres
+        )
 
+        // Random movies تم طلبها مرة واحدة عند فتح Home.
+        assertEquals(
+            1,
+            repository.getRandomMoviesCallCount
+        )
+        assertEquals(
+            expectedRandomMovies,
+            viewModel.uiState.value.randomMovies
+        )
+
+        // الانتقال من All إلى Action.
         viewModel.selectGenre(28)
 
-        assertEquals(28, viewModel.uiState.value.selectedGenreId)
+        assertEquals(
+            28,
+            viewModel.uiState.value.selectedGenreId
+        )
         assertTrue(viewModel.uiState.value.isLoading)
         assertTrue(viewModel.uiState.value.movies.isEmpty())
 
         advanceUntilIdle()
 
-        assertEquals(listOf(28), repository.requestedGenreIds)
-        assertEquals(actionMovies, viewModel.uiState.value.movies)
+        assertEquals(
+            listOf(28),
+            repository.requestedGenreIds
+        )
+        assertEquals(
+            actionMovies,
+            viewModel.uiState.value.movies
+        )
         assertFalse(viewModel.uiState.value.isLoading)
 
+        // تغيير الـ genre لم يُعِد طلب Random movies.
+        assertEquals(
+            1,
+            repository.getRandomMoviesCallCount
+        )
+        assertEquals(
+            expectedRandomMovies,
+            viewModel.uiState.value.randomMovies
+        )
+
+        // الرجوع إلى All.
         viewModel.selectGenre(null)
+
         advanceUntilIdle()
 
-        assertNull(viewModel.uiState.value.selectedGenreId)
-        assertEquals(expectedMovies, viewModel.uiState.value.movies)
-        assertEquals(2, repository.getMoviesCallCount)
+        assertNull(
+            viewModel.uiState.value.selectedGenreId
+        )
+        assertEquals(
+            expectedMovies,
+            viewModel.uiState.value.movies
+        )
+        assertEquals(
+            2,
+            repository.getMoviesCallCount
+        )
+
+        // الرجوع إلى All أيضًا لم يُعِد طلب Random movies.
+        assertEquals(
+            1,
+            repository.getRandomMoviesCallCount
+        )
+        assertEquals(
+            expectedRandomMovies,
+            viewModel.uiState.value.randomMovies
+        )
     }
 
     @Test
@@ -219,13 +289,69 @@ class HomeViewModelTest {
         assertEquals(28, viewModel.uiState.value.selectedGenreId)
     }
 
+    @Test
+    fun init_randomMoviesSucceed_stateContainsRandomMovies() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = expectedMovies,
+            randomMovies = expectedRandomMovies
+        )
+
+        val viewModel = HomeViewModel(repository)
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+
+        assertEquals(expectedRandomMovies, state.randomMovies)
+        assertFalse(state.isRandomMoviesLoading)
+        assertNull(state.randomMoviesErrorMessage)
+        assertEquals(1, repository.getRandomMoviesCallCount)
+    }
+
+    @Test
+    fun retryRandomMovies_afterFailure_loadsMovies() = runTest {
+        val repository = FakeMoviesRepository(
+            movies = expectedMovies,
+            randomMoviesError = IllegalStateException(
+                "Random movies error"
+            )
+        )
+
+        val viewModel = HomeViewModel(repository)
+
+        advanceUntilIdle()
+
+        repository.randomMoviesError = null
+        repository.randomMovies = expectedRandomMovies
+
+        viewModel.retryRandomMovies()
+
+        assertTrue(
+            viewModel.uiState.value.isRandomMoviesLoading
+        )
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+
+        assertEquals(expectedRandomMovies, state.randomMovies)
+        assertFalse(state.isRandomMoviesLoading)
+        assertNull(state.randomMoviesErrorMessage)
+        assertEquals(2, repository.getRandomMoviesCallCount)
+    }
+
     private class FakeMoviesRepository(
         var movies: List<Movie> = emptyList(),
-        var error: Exception? = null
+        var error: Exception? = null ,
+        var randomMovies: List<Movie> = emptyList(),
+        var randomMoviesError: Exception? = null
     ) : MoviesRepository {
 
         var genreMoviesResponder:
                 (suspend (Int) -> List<Movie>)? = null
+
+        var getRandomMoviesCallCount: Int = 0
+            private set
 
         val cancelledGenreIds = mutableListOf<Int>()
 
@@ -303,8 +429,16 @@ class HomeViewModelTest {
         }
 
         override suspend fun getRandomMovies(): List<Movie> {
-            error("getRandomMovies is not configured for this test")
+            getRandomMoviesCallCount++
+
+            randomMoviesError?.let { exception ->
+                throw exception
+            }
+
+            return randomMovies
         }
+
+
 
 
     }

@@ -27,11 +27,14 @@ class HomeViewModel @Inject constructor(
     private var moviesJob: Job? = null
     private var genresJob: Job? = null
 
+    private var randomMoviesJob: Job? = null
+
     private var moviesRequestVersion = 0L
 
     init {
         loadMovies()
         loadGenres()
+        loadRandomMovies()
     }
 
     fun selectGenre(genreId: Int?) {
@@ -161,6 +164,48 @@ class HomeViewModel @Inject constructor(
                         isGenresLoading = false,
                         genresErrorMessage =
                             "Unable to load categories. Please try again."
+                    )
+                }
+            }
+        }
+    }
+    fun retryRandomMovies() {
+        if (_uiState.value.randomMoviesErrorMessage == null) return
+
+        loadRandomMovies()
+    }
+
+    private fun loadRandomMovies() {
+        if (randomMoviesJob?.isActive == true) return
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                randomMovies = emptyList(),
+                isRandomMoviesLoading = true,
+                randomMoviesErrorMessage = null
+            )
+        }
+
+        randomMoviesJob = viewModelScope.launch {
+            try {
+                val movies = repository.getRandomMovies()
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        randomMovies = movies,
+                        isRandomMoviesLoading = false,
+                        randomMoviesErrorMessage = null
+                    )
+                }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        randomMovies = emptyList(),
+                        isRandomMoviesLoading = false,
+                        randomMoviesErrorMessage = exception.message
+                            ?: "Unable to load random movies"
                     )
                 }
             }
