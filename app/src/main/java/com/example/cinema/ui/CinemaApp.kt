@@ -113,7 +113,8 @@ fun CinemaApp(
                     },
                     onRetry = homeViewModel::retry,
                     onGenreSelected = homeViewModel::selectGenre,
-                    onRetryGenres = homeViewModel::retryGenres
+                    onRetryGenres = homeViewModel::retryGenres,
+                    onRetryRandomMovies = homeViewModel::retryRandomMovies
                 )
             }
 
